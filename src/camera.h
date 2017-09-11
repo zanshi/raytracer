@@ -12,20 +12,39 @@
 
 namespace rays {
 
+    using ColorChar = std::array<unsigned char, 3>;
+
     class Camera {
+        using CameraPlane = std::vector<std::vector<Pixel>>;
     public:
         //Camera(std::initializer_list<Vertex> eyeList, unsigned int x, unsigned int y);
 
-        Camera(std::initializer_list<Vertex> eyes, unsigned int x, unsigned int y, unsigned int currEyeIdx = 0);
+        explicit Camera(std::vector<Vertex> eyes = {{-2, 0, 0, 1}}, unsigned int x = 1000, unsigned int y = 1000,
+                        unsigned int currEyeIdx = 0) : eyes(std::move(eyes)),
+                                                       plane(x, std::vector<Pixel>(y)),
+                                                       eyeIdx(currEyeIdx) {}
 
-        void render();
+        Camera(std::initializer_list<Vertex> eyes, unsigned int x = 1000, unsigned int y = 1000,
+               unsigned int currEyeIdx = 0) : eyes(eyes),
+                                              plane(x, std::vector<Pixel>(y)),
+                                              eyeIdx(currEyeIdx) {}
+
+
+        void render(const Scene &scene);
 
         void createImage() const;
 
-        std::vector<Vertex> eyes;
-        std::vector<std::vector<Pixel>> plane;
+    private:
 
-        unsigned int currEyeIdx{0};
+        ColorChar toneMap(ColorDbl c, double iMax) const;
+
+        double getMaxPixelColorVal() const;
+
+        std::vector<Vertex> eyes;
+        CameraPlane plane;
+
+        unsigned int eyeIdx{0};
+        float dx{0.002};
 
     };
 

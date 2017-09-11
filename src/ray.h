@@ -9,13 +9,18 @@
 #include "vertex.h"
 #include "colordbl.h"
 #include "triangle.h"
+#include "direction.h"
+
+#include <Eigen/Dense>
 
 namespace rays {
     struct Ray {
 
         std::shared_ptr<Vertex> start;
         std::shared_ptr<Vertex> end;
-        std::shared_ptr<Triangle> endTriangle;
+        Vertex o; // origin
+        Direction d; // normalized direction vector
+        Shape& endShape;
         ColorDbl rayColor;
     };
 }

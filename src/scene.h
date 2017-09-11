@@ -7,15 +7,16 @@
 
 #include "common.h"
 #include "triangle.h"
+#include "trianglemesh.h"
 
 namespace rays {
     class Scene {
 
-        explicit Scene(std::vector<Triangle> aggregates) : triangles{std::move(aggregates)} {}
+        explicit Scene(std::vector<Shape> meshes) : shapes{std::move(meshes)} {}
 
-        std::vector<Triangle> triangles;
+        std::vector<Shape> shapes;
 
-        Triangle &intersectedTriangle(const Ray &ray);
+        bool intersect(Ray &ray);
 
     };
 }

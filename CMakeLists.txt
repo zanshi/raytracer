@@ -18,7 +18,9 @@ set(HEADERS
         src/triangle.h
         src/direction.h
         src/colordbl.h
-        src/trianglemesh.h)
+        src/trianglemesh.h
+        src/shape.h
+        src/sphere.h)
 
 include_directories(src)
 include_directories(vendor)

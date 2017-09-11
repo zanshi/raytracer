@@ -22,9 +22,11 @@ namespace rays {
     class Camera;
     class Scene;
     struct Pixel;
-    struct Vertex;
+    struct Shape;
+    struct Sphere;
     struct Triangle;
-    struct Direction;
+    struct TriangleMesh;
+    //struct Direction;
     struct Ray;
     struct ColorDbl;
 

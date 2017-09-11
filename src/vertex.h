@@ -5,20 +5,20 @@
 #ifndef RAYTRACER_VERTEX_H
 #define RAYTRACER_VERTEX_H
 
-//#include <Eigen/Dense>
+#include <Eigen/Dense>
 
 namespace rays {
 
-    //using Vertex = Eigen::Vector4d;
+    using Vertex = Eigen::Matrix<float, 4,1>;
 
-    struct Vertex {
-        using DataType = double;
-
-        DataType x;
-        DataType y;
-        DataType z;
-        DataType w;
-    };
+//    struct Vertex {
+//        using DataType = double;
+//
+//        DataType x;
+//        DataType y;
+//        DataType z;
+//        DataType w;
+//    };
 
 }
 #endif //RAYTRACER_VERTEX_H

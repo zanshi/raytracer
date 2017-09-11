@@ -13,6 +13,10 @@ namespace rays {
 struct Pixel {
     ColorDbl color;
     std::vector<std::shared_ptr<Ray>> rays;
+
+    friend bool operator<(const Pixel& lhs, const Pixel& rhs) {
+        return (lhs.color.r < rhs.color.r) && (lhs.color.g < rhs.color.g) && (lhs.color.b < rhs.color.b);
+    }
 };
 
 }

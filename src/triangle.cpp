@@ -6,7 +6,5 @@
 #include "ray.h"
 
 namespace rays {
-    Vertex Triangle::rayIntersection(const Ray &arg) {
-        return Vertex();
-    }
+
 }

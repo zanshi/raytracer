@@ -22,11 +22,11 @@ namespace rays {
 
     struct Triangle final : public Shape {
 
-        using limits = std::numeric_limits<float>;
-
         explicit Triangle(const std::shared_ptr<TriangleMesh> &m, std::array<unsigned int, 3> inds, Direction n,
                           ColorDbl c)
                 : mesh(m), indices(inds), normal(std::move(n)), Shape(c) {}
+
+        virtual ~Triangle() {}
 
         bool rayIntersection(Ray &ray) const override {
             // Möller-Trumbore
@@ -57,7 +57,7 @@ namespace rays {
             // Test bounds for v
             const Vertex Q = T.cross(e1);
             double v = dir.dot(Q);
-            if ( v < 0.0 || u + v > det) {
+            if (v < 0.0 || u + v > det) {
                 return false;
             }
 

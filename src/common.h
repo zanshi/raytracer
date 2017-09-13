@@ -23,7 +23,9 @@ namespace rays {
     struct Vector;
 
     class Camera;
+
     class Scene;
+
     struct Pixel;
     struct Shape;
     struct Sphere;

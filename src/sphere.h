@@ -15,7 +15,9 @@
 namespace rays {
     struct Sphere final : public Shape {
         explicit Sphere(const ColorDbl &c, Vertex center, float radius = 0.f)
-                : Shape(c), center(center), r(radius) { }
+                : Shape(c), center(center), r(radius) {}
+
+        virtual ~Sphere() {}
 
         bool rayIntersection(Ray &ray) const override {
             const Vertex d = ray.e - ray.o;
@@ -28,8 +30,8 @@ namespace rays {
             if (discrim < 0) { return false; } // No real solutions
             const float rootDiscrim = std::sqrtf(discrim);
 
-            const auto d1 = -( b / 2.0f ) + rootDiscrim;
-            const auto d2 = -( b / 2.0f ) - rootDiscrim;
+            const auto d1 = -(b / 2.0f) + rootDiscrim;
+            const auto d2 = -(b / 2.0f) - rootDiscrim;
 
             ray.e = ray.o + std::min(d1, d2) * d;
 

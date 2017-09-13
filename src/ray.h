@@ -27,14 +27,15 @@ namespace rays {
         // calc real intersection point with x(t)
 
         Ray() = default;
-        Ray(const Vertex& origin, const Vertex& end)
-                : o(origin), e(end) { }
 
-        const Vertex o {0,0,0,1}; // origin
-        Vertex e {0,0,0,1}; // end
+        Ray(const Vertex &origin, const Vertex &end)
+                : o(origin), e(end) {}
+
+        const Vertex o{0, 0, 0, 1}; // origin
+        Vertex e{0, 0, 0, 1}; // end
         //Direction d {0,0,0}; // normalized direction vector
-        ColorDbl color {0,0,0};
-        std::shared_ptr<Shape> endShape {nullptr};
+        ColorDbl color{0, 0, 0};
+        std::shared_ptr<Shape> endShape{nullptr};
     };
 }
 #endif //RAYTRACER_RAY_H

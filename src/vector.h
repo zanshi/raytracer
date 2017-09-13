@@ -72,11 +72,11 @@ namespace rays {
 
         template<typename U>
         Vector<T> operator*(U rhs) const {
-           return Vector<T>(x * rhs, y * rhs, z * rhs, w * rhs); 
+            return Vector<T>(x * rhs, y * rhs, z * rhs, w * rhs);
         }
 
         template<typename U>
-        friend Vector<T> operator*(U lhs, const Vector<T>& rhs) {
+        friend Vector<T> operator*(U lhs, const Vector<T> &rhs) {
             return rhs * lhs;
         }
 

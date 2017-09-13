@@ -12,7 +12,10 @@ namespace rays {
 
     struct Shape {
         explicit Shape(ColorDbl c) : color(c) {}
-        virtual bool rayIntersection(Ray& ray) const = 0;
+
+        virtual ~Shape() = default;
+
+        virtual bool rayIntersection(Ray &ray) const = 0;
 
         ColorDbl color;
     };

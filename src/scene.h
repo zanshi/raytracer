@@ -12,11 +12,13 @@
 namespace rays {
     class Scene {
 
-        explicit Scene(std::vector<Shape> meshes) : shapes{std::move(meshes)} {}
+    public:
 
-        std::vector<Shape> shapes;
+        explicit Scene(std::vector<std::shared_ptr<Shape>> meshes) : shapes{std::move(meshes)} {}
 
-        bool intersect(Ray &ray);
+        std::vector<std::shared_ptr<Shape>> shapes;
+
+        bool intersect(Ray &ray) const;
 
     };
 }

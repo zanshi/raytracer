@@ -21,6 +21,7 @@ namespace rays {
 
         std::unique_ptr<std::vector<Vertex>> V;
         std::unique_ptr<std::vector<int>> I;
+        // color vector?
 
     };
 }

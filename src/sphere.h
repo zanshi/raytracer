@@ -15,20 +15,25 @@
 namespace rays {
     struct Sphere final : public Shape {
         explicit Sphere(const ColorDbl &c, Vertex center, float radius = 0.f)
-                : Shape(c), center(std::move(center)), r(radius) { }
+                : Shape(c), center(center), r(radius) { }
 
         bool rayIntersection(Ray &ray) const override {
-            const Eigen::Vector4f nD {ray.d[0], ray.d[1], ray.d[2], 1.0};
-            const float a = ray.d.dot(ray.d);
-            const float b = 2.0f * (nD.dot(ray.o - center));
+            const Vertex d = ray.e - ray.o;
+            const float a = d.dot(d);
+            const float b = 2.0f * (d.dot(ray.o - center));
             const float c = (ray.o - center).dot(ray.o - center) - (r * r);
 
-            const float d1 = -( b / 2.0f ) + std::sqrtf(std::powf((b / 2.0f), 2) - a * c);
-            const float d2 = -( b / 2.0f ) - std::sqrtf(std::powf((b / 2.0f), 2) - a * c);
+            const float discrim = std::powf((b / 2.0f), 2) - a * c;
 
-            // return what?
+            if (discrim < 0) { return false; } // No real solutions
+            const float rootDiscrim = std::sqrtf(discrim);
 
-            return false;
+            const auto d1 = -( b / 2.0f ) + rootDiscrim;
+            const auto d2 = -( b / 2.0f ) - rootDiscrim;
+
+            ray.e = ray.o + std::min(d1, d2) * d;
+
+            return true;
         }
 
         const Vertex center;

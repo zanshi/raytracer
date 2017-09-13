@@ -19,6 +19,9 @@
 namespace rays {
 
     // Global forward declarations
+    template<typename T>
+    struct Vector;
+
     class Camera;
     class Scene;
     struct Pixel;

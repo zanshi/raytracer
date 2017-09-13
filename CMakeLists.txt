@@ -7,6 +7,7 @@ set(SOURCES
         src/camera.cpp
         src/scene.cpp
         src/triangle.cpp
+        src/vector.h
         src/trianglemesh.cpp)
 set(HEADERS
         src/common.h
@@ -20,7 +21,7 @@ set(HEADERS
         src/colordbl.h
         src/trianglemesh.h
         src/shape.h
-        src/sphere.h)
+        src/sphere.h )
 
 include_directories(src)
 include_directories(vendor)

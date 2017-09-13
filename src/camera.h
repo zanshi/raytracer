@@ -22,12 +22,15 @@ namespace rays {
         explicit Camera(std::vector<Vertex> eyes = {{-2, 0, 0, 1}}, unsigned int x = 1000, unsigned int y = 1000,
                         unsigned int currEyeIdx = 0) : eyes(std::move(eyes)),
                                                        plane(x, std::vector<Pixel>(y)),
-                                                       eyeIdx(currEyeIdx) {}
+                                                       eyeIdx(currEyeIdx), dx(2.0f / x) {}
 
-        Camera(std::initializer_list<Vertex> eyes, unsigned int x = 1000, unsigned int y = 1000,
-               unsigned int currEyeIdx = 0) : eyes(eyes),
+        Camera(std::initializer_list<Vertex> e, unsigned int x = 1000, unsigned int y = 1000,
+               unsigned int currEyeIdx = 0) : eyes(e),
                                               plane(x, std::vector<Pixel>(y)),
-                                              eyeIdx(currEyeIdx) {}
+                                              eyeIdx(currEyeIdx), dx(2.0f / x) {
+            std::cout << "test" << std::endl;
+            std::cout << eyes[currEyeIdx].x << std::endl;
+        }
 
 
         void render(const Scene &scene);

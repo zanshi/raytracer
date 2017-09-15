@@ -27,11 +27,7 @@ namespace rays {
         Camera(std::initializer_list<Vertex> e, unsigned int x = 1000, unsigned int y = 1000,
                unsigned int currEyeIdx = 0) : eyes(e),
                                               plane(x, std::vector<Pixel>(y)),
-                                              eyeIdx(currEyeIdx), dx(2.0f / x) {
-            std::cout << "test" << std::endl;
-            std::cout << eyes[currEyeIdx].x << std::endl;
-        }
-
+                                              eyeIdx(currEyeIdx), dx(2.0f / x) {}
 
         void render(const Scene &scene);
 
@@ -43,11 +39,11 @@ namespace rays {
 
         double getMaxPixelColorVal() const;
 
-        std::vector<Vertex> eyes;
+        const std::vector<Vertex> eyes;
         CameraPlane plane;
 
         unsigned int eyeIdx{0};
-        float dx{0.002};
+        const float dx{0.002};
 
     };
 

@@ -3,6 +3,17 @@ project(raytracer)
 
 set(CMAKE_CXX_STANDARD 17)
 
+SET(CMAKE_C_COMPILER /usr/local/bin/gcc-7)
+SET(CMAKE_CXX_COMPILER /usr/local/bin/g++-7)
+
+FIND_PACKAGE( OpenMP REQUIRED)
+if(OPENMP_FOUND)
+    message("OPENMP FOUND")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 set(SOURCES
         src/camera.cpp
         src/scene.cpp
@@ -21,7 +32,7 @@ set(HEADERS
         src/colordbl.h
         src/trianglemesh.h
         src/shape.h
-        src/sphere.h )
+        src/sphere.h src/object.h src/material.h)
 
 include_directories(src)
 include_directories(vendor)

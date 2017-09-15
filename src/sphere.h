@@ -17,7 +17,7 @@ namespace rays {
         explicit Sphere(const ColorDbl &c, Vertex center, float radius = 0.f)
                 : Shape(c), center(center), r(radius) {}
 
-        virtual ~Sphere() {}
+        ~Sphere() final = default;
 
         bool rayIntersection(Ray &ray) const override {
             const Vertex d = ray.e - ray.o;
@@ -25,21 +25,23 @@ namespace rays {
             const float b = 2.0f * (d.dot(ray.o - center));
             const float c = (ray.o - center).dot(ray.o - center) - (r * r);
 
-            const float discrim = std::powf((b / 2.0f), 2) - a * c;
+            const auto discrim = std::pow((b / 2.0f), 2) - a * c;
 
             if (discrim < 0) { return false; } // No real solutions
-            const float rootDiscrim = std::sqrtf(discrim);
+            const auto rootDiscrim = std::sqrt(discrim);
 
+            // Calculate the two solutions to the quadratic equation
             const auto d1 = -(b / 2.0f) + rootDiscrim;
             const auto d2 = -(b / 2.0f) - rootDiscrim;
 
+            // and choose the one closest to the ray origin
             ray.e = ray.o + std::min(d1, d2) * d;
 
             return true;
         }
 
         const Vertex center;
-        const float r{0.f};
+        const float r{1.f};
 
     };
 }

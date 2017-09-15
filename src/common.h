@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <utility>
 #include <initializer_list>
+#include <cmath>
 
 
 namespace rays {
@@ -27,6 +28,7 @@ namespace rays {
     class Scene;
 
     struct Pixel;
+    struct Object;
     struct Shape;
     struct Sphere;
     struct Triangle;
@@ -34,6 +36,7 @@ namespace rays {
     //struct Direction;
     struct Ray;
     struct ColorDbl;
+    struct Material;
 
 
 } // namespace rays

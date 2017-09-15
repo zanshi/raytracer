@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "vertex.h"
 #include "vector.h"
+#include <omp.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
@@ -19,9 +20,12 @@ namespace rays {
         // Tile this later
         float offset = 1.0f - 1.0f / plane.size();
 
+
+#pragma omp parallel for
         for (auto i = 0; i < plane.size(); i++) {
             for (auto j = 0; j < plane[0].size(); j++) {
                 // Determine position on camera plane
+                // TODO Refactor this to a function
                 auto pointOnPlane = Vertex{0, i * dx - offset, j * dx - offset, 1.0};
                 // Create ray
                 auto ray = Ray(eyes[eyeIdx], pointOnPlane);
@@ -29,8 +33,7 @@ namespace rays {
                 if (scene.intersect(ray)) {
                     auto &&pixel = plane[i][j];
                     pixel.color = ray.color; // For now set pixel color to ray color
-                    auto r = std::make_shared<Ray>(ray);
-                    pixel.rays.push_back(r); // Save ray in pixel
+                    pixel.rays.emplace_back(std::make_shared<Ray>(ray)); // Save ray in pixel
                     // Ray hit a shape in the scene, save for later? probably
                 }
             }
@@ -39,10 +42,6 @@ namespace rays {
     }
 
     void Camera::createImage() const {
-
-//        std::vector<std::vector<ColorChar>> outImg(
-//                plane.size(),
-//                std::vector<ColorChar>(plane[0].size()));
 
         auto height = plane.size();
         auto width = plane[0].size();

@@ -22,11 +22,11 @@ namespace rays {
 
     struct Triangle final : public Shape {
 
-        explicit Triangle(const std::shared_ptr<TriangleMesh> &m, std::array<unsigned int, 3> inds, Direction n,
+        explicit Triangle(std::shared_ptr<TriangleMesh> m, std::array<unsigned int, 3> inds, Direction n,
                           ColorDbl c)
-                : mesh(m), indices(inds), normal(std::move(n)), Shape(c) {}
+                : mesh(std::move(m)), indices(inds), normal(std::move(n)), Shape(c) {}
 
-        virtual ~Triangle() {}
+        ~Triangle() final = default;
 
         bool rayIntersection(Ray &ray) const override {
             // Möller-Trumbore

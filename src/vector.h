@@ -11,18 +11,18 @@
 namespace rays {
 
     template<typename T>
-    struct Vector {
+    struct Vector4 {
 
-        Vector() = default;
+        Vector4() = default;
 
-        Vector(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+        Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
 
         T x{0};
         T y{0};
         T z{0};
         T w{0};
 
-        Vector<T> &operator+=(const Vector<T> &rhs) {
+        Vector4<T> &operator+=(const Vector4<T> &rhs) {
             x += rhs.x;
             y += rhs.y;
             z += rhs.z;
@@ -30,12 +30,12 @@ namespace rays {
             return *this;
         }
 
-        friend Vector<T> operator+(Vector<T> lhs, const Vector<T> &rhs) {
+        friend Vector4<T> operator+(Vector4<T> lhs, const Vector4<T> &rhs) {
             lhs += rhs;
             return lhs;
         }
 
-        Vector<T> &operator-=(const Vector<T> &rhs) {
+        Vector4<T> &operator-=(const Vector4<T> &rhs) {
             x -= rhs.x;
             y -= rhs.y;
             z -= rhs.z;
@@ -43,12 +43,12 @@ namespace rays {
             return *this;
         }
 
-        friend Vector<T> operator-(Vector<T> lhs, const Vector<T> &rhs) {
+        friend Vector4<T> operator-(Vector4<T> lhs, const Vector4<T> &rhs) {
             lhs -= rhs;
             return lhs;
         }
 
-        Vector<T> &operator*=(const Vector<T> &rhs) {
+        Vector4<T> &operator*=(const Vector4<T> &rhs) {
             x *= rhs.x;
             y *= rhs.y;
             z *= rhs.z;
@@ -56,13 +56,13 @@ namespace rays {
             return *this;
         }
 
-        friend Vector<T> operator*(Vector<T> lhs, const Vector<T> &rhs) {
+        friend Vector4<T> operator*(Vector4<T> lhs, const Vector4<T> &rhs) {
             lhs *= rhs;
             return lhs;
         }
 
         template<typename U>
-        Vector<T> &operator*=(const U rhs) {
+        Vector4<T> &operator*=(const U rhs) {
             x *= rhs;
             y *= rhs;
             z *= rhs;
@@ -71,24 +71,24 @@ namespace rays {
         }
 
         template<typename U>
-        Vector<T> operator*(U rhs) const {
-            return Vector<T>(x * rhs, y * rhs, z * rhs, w * rhs);
+        Vector4<T> operator*(U rhs) const {
+            return Vector4<T>(x * rhs, y * rhs, z * rhs, w * rhs);
         }
 
         template<typename U>
-        friend Vector<T> operator*(U lhs, const Vector<T> &rhs) {
+        friend Vector4<T> operator*(U lhs, const Vector4<T> &rhs) {
             return rhs * lhs;
         }
 
 
-        // Vector<T> specific operators
+        // Vector4<T> specific operators
 
-        T dot(const Vector<T> &rhs) const {
+        T dot(const Vector4<T> &rhs) const {
             return x * rhs.x + y * rhs.y + z * rhs.z;
         }
 
-        Vector<T> cross(const Vector<T> &rhs) const {
-            Vector<T> res{};
+        Vector4<T> cross(const Vector4<T> &rhs) const {
+            Vector4<T> res{};
             // This currently assumes that w in both *this and rhs is 1.0
             // should probably make it more general
             //assert(std::abs(1.0 - w) < std::numeric_limits<T>::epsilon());
@@ -104,5 +104,89 @@ namespace rays {
 
     };
 
+    template<typename T>
+    struct Vector3 {
+
+        Vector3() = default;
+
+        Vector3(T x, T y, T z) : x(x), y(y), z(z) {}
+
+        T x{0};
+        T y{0};
+        T z{0};
+
+        Vector3<T> &operator+=(const Vector3<T> &rhs) {
+            x += rhs.x;
+            y += rhs.y;
+            z += rhs.z;
+            return *this;
+        }
+
+        friend Vector3<T> operator+(Vector3<T> lhs, const Vector3<T> &rhs) {
+            lhs += rhs;
+            return lhs;
+        }
+
+        Vector3<T> &operator-=(const Vector3<T> &rhs) {
+            x -= rhs.x;
+            y -= rhs.y;
+            z -= rhs.z;
+            return *this;
+        }
+
+        friend Vector3<T> operator-(Vector3<T> lhs, const Vector3<T> &rhs) {
+            lhs -= rhs;
+            return lhs;
+        }
+
+        Vector3<T> &operator*=(const Vector3<T> &rhs) {
+            x *= rhs.x;
+            y *= rhs.y;
+            z *= rhs.z;
+            return *this;
+        }
+
+        friend Vector3<T> operator*(Vector3<T> lhs, const Vector3<T> &rhs) {
+            lhs *= rhs;
+            return lhs;
+        }
+
+        template<typename U>
+        Vector3<T> &operator*=(const U rhs) {
+            x *= rhs;
+            y *= rhs;
+            z *= rhs;
+            return *this;
+        }
+
+        template<typename U>
+        Vector3<T> operator*(U rhs) const {
+            return Vector3<T>(x * rhs, y * rhs, z * rhs);
+        }
+
+        template<typename U>
+        friend Vector3<T> operator*(U lhs, const Vector3<T> &rhs) {
+            return rhs * lhs;
+        }
+
+
+        // Vector3<T> specific operators
+
+        T dot(const Vector3<T> &rhs) const {
+            return x * rhs.x + y * rhs.y + z * rhs.z;
+        }
+
+        Vector3<T> cross(const Vector3<T> &rhs) const {
+            Vector3<T> res{};
+
+            res.x = y * rhs.z - z * rhs.y;
+            res.y = z * rhs.x - x * rhs.z;
+            res.z = x * rhs.y - y * rhs.x;
+
+            return res;
+        }
+
+
+    };
 }
 #endif //RAYTRACER_VECTOR_H

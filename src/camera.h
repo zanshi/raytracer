@@ -31,9 +31,11 @@ namespace rays {
 
         void render(const Scene &scene);
 
-        void createImage() const;
+        void createImage(const std::string &filename) const;
 
     private:
+
+        ColorDbl integrate(Ray& ray, const Scene& scene, int depth) const;
 
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
@@ -44,6 +46,7 @@ namespace rays {
 
         unsigned int eyeIdx{0};
         const float dx{0.002};
+        const int maxDepth = 10;
 
     };
 

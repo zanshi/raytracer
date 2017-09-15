@@ -3,7 +3,6 @@
 //
 
 #include "scene.h"
-#include "shape.h"
 #include "sphere.h"
 #include "ray.h"
 

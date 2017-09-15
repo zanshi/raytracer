@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "vertex.h"
 #include "vector.h"
+
 #include <omp.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -27,10 +28,16 @@ namespace rays {
                 // Determine position on camera plane
                 // TODO Refactor this to a function
                 auto pointOnPlane = Vertex{0, i * dx - offset, j * dx - offset, 1.0};
-                // Create ray
+                // Create eye -> camera plane ray
                 auto ray = Ray(eyes[eyeIdx], pointOnPlane);
 
+                // First intersection test
+                // TODO Refactor
                 if (scene.intersect(ray)) {
+                    // Add contribution from light sources
+                    for (auto &&l : scene.lights) {
+
+                    }
                     auto &&pixel = plane[i][j];
                     pixel.color = ray.color; // For now set pixel color to ray color
                     pixel.rays.emplace_back(std::make_shared<Ray>(ray)); // Save ray in pixel
@@ -41,7 +48,7 @@ namespace rays {
 
     }
 
-    void Camera::createImage() const {
+    void Camera::createImage(const std::string &filename) const {
 
         auto height = plane.size();
         auto width = plane[0].size();
@@ -62,7 +69,7 @@ namespace rays {
             }
         }
 
-        if (stbi_write_png("out.png", width, height, 3, outImg.data(), width * 3)) {
+        if (stbi_write_png(filename.data(), width, height, 3, outImg.data(), width * 3)) {
             std::cout << "Output written to out.png" << std::endl;
         } else {
             std::cerr << "Failed to write file!" << std::endl;
@@ -91,5 +98,26 @@ namespace rays {
         }
 
         return maxVal;
+    }
+
+    ColorDbl Camera::integrate(Ray &ray, const Scene &scene, int depth) const {
+
+        ColorDbl L{0.,0.,0.};
+
+        if(!scene.intersect(ray)) {
+            for(auto && l : scene.lights) {
+                // Add light contributions
+            }
+            return L;
+        }
+
+        // calculate surface radiance
+
+        if (depth + 1 < maxDepth) {
+            // trace reflection and refraction rays recursively
+        }
+
+
+        return L;
     }
 }

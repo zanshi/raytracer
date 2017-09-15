@@ -32,6 +32,9 @@ namespace rays {
                 : o(origin), e(end) {}
 
         const Vertex o{0, 0, 0, 1}; // origin
+        std::shared_ptr<Ray> parent;
+        std::shared_ptr<Ray> T;
+        std::shared_ptr<Ray> R;
         Vertex e{0, 0, 0, 1}; // end
         //Direction d {0,0,0}; // normalized direction vector
         ColorDbl color{0, 0, 0};

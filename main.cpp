@@ -3,6 +3,7 @@
 //
 
 #include <scene.h>
+#include <point_light.h>
 #include "common.h"
 #include "camera.h"
 #include "triangle.h"
@@ -99,51 +100,64 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
 
     std::vector<std::shared_ptr<Shape>> tris;
 
-    tris.push_back(std::make_shared<Triangle>(t0));
-    tris.push_back(std::make_shared<Triangle>(t1));
-    tris.push_back(std::make_shared<Triangle>(t2));
-    tris.push_back(std::make_shared<Triangle>(t3));
-    tris.push_back(std::make_shared<Triangle>(t4));
-    tris.push_back(std::make_shared<Triangle>(t5));
-    tris.push_back(std::make_shared<Triangle>(t6));
-    tris.push_back(std::make_shared<Triangle>(t7));
-    tris.push_back(std::make_shared<Triangle>(t8));
-    tris.push_back(std::make_shared<Triangle>(t9));
-    tris.push_back(std::make_shared<Triangle>(t10));
-    tris.push_back(std::make_shared<Triangle>(t11));
-    tris.push_back(std::make_shared<Triangle>(t12));
-    tris.push_back(std::make_shared<Triangle>(t13));
-    tris.push_back(std::make_shared<Triangle>(t14));
-    tris.push_back(std::make_shared<Triangle>(t15));
-    tris.push_back(std::make_shared<Triangle>(t16));
-    tris.push_back(std::make_shared<Triangle>(t17));
-    tris.push_back(std::make_shared<Triangle>(t18));
-    tris.push_back(std::make_shared<Triangle>(t19));
+    tris.emplace_back(std::make_shared<Triangle>(t0));
+    tris.emplace_back(std::make_shared<Triangle>(t1));
+    tris.emplace_back(std::make_shared<Triangle>(t2));
+    tris.emplace_back(std::make_shared<Triangle>(t3));
+    tris.emplace_back(std::make_shared<Triangle>(t4));
+    tris.emplace_back(std::make_shared<Triangle>(t5));
+    tris.emplace_back(std::make_shared<Triangle>(t6));
+    tris.emplace_back(std::make_shared<Triangle>(t7));
+    tris.emplace_back(std::make_shared<Triangle>(t8));
+    tris.emplace_back(std::make_shared<Triangle>(t9));
+    tris.emplace_back(std::make_shared<Triangle>(t10));
+    tris.emplace_back(std::make_shared<Triangle>(t11));
+    tris.emplace_back(std::make_shared<Triangle>(t12));
+    tris.emplace_back(std::make_shared<Triangle>(t13));
+    tris.emplace_back(std::make_shared<Triangle>(t14));
+    tris.emplace_back(std::make_shared<Triangle>(t15));
+    tris.emplace_back(std::make_shared<Triangle>(t16));
+    tris.emplace_back(std::make_shared<Triangle>(t17));
+    tris.emplace_back(std::make_shared<Triangle>(t18));
+    tris.emplace_back(std::make_shared<Triangle>(t19));
 
     return tris;
 }
 
-int main() {
-
-    // Create scene
+Scene setupScene() {
+   // Create scene
     std::vector<std::shared_ptr<Shape>> world = createWorld();
+    // Add a sphere
     auto sphere = std::make_shared<Sphere>(Sphere({1, 0, 0}, {5, 0, 2, 1}, 1.5f));
     world.insert(world.begin(), sphere);
 //    world.push_back(sphere);
 
-    auto scene = Scene(std::move(world));
+    // Create a point light
+    std::vector<Light> lights{PointLight({0, 0, 3, 1}, {1, 1, 1}, 1.0)};
 
+    return Scene(std::move(world), std::move(lights));
+
+}
+
+Camera setupCamera() {
+    // Create camera "eyes"
     std::vector<Vertex> eyes(2);
     eyes[0] = Vertex(-2.0, 0, 0, 1);
     eyes[1] = Vertex(-0.5, 0, 0, 1);
 
-    auto camera = Camera(eyes, 1000, 1000, 1);
+    return Camera(eyes, 1000, 1000, 1);
+}
+
+int main() {
+
+    auto scene = setupScene();
+    auto camera = setupCamera();
 
     // Render the scene
     camera.render(scene);
 
-    // Save an image
-    camera.createImage();
+    // Save an image to out.png
+    camera.createImage("out.png");
 
     return 0;
 }

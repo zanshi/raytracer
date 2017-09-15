@@ -24,19 +24,19 @@ namespace rays {
     struct Vector;
 
     class Camera;
-
     class Scene;
 
-    struct Pixel;
     struct Object;
     struct Shape;
     struct Sphere;
     struct Triangle;
     struct TriangleMesh;
-    //struct Direction;
+
     struct Ray;
+    struct Pixel;
     struct ColorDbl;
     struct Material;
+    struct Light;
 
 
 } // namespace rays

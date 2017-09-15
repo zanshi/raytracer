@@ -6,19 +6,12 @@
 #define RAYTRACER_DIRECTION_H
 
 
-#include <Eigen/Dense>
+#include "vector.h"
 
 namespace rays {
 
-    using Direction = Eigen::Matrix<float, 3, 1>;
+    using Direction = Vector3<float>;
 
-//    struct Direction {
-//        using DataType = double;
-//
-//        DataType x;
-//        DataType y;
-//        DataType z;
-//    };
 }
 
 #endif //RAYTRACER_DIRECTION_H

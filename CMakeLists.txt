@@ -32,7 +32,7 @@ set(HEADERS
         src/colordbl.h
         src/trianglemesh.h
         src/shape.h
-        src/sphere.h src/object.h src/material.h)
+        src/sphere.h src/object.h src/material.h src/light.h src/point_light.h)
 
 include_directories(src)
 include_directories(vendor)

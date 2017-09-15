@@ -10,8 +10,6 @@
 #include "vertex.h"
 #include "ray.h"
 
-#include <Eigen/Dense>
-
 namespace rays {
     struct Sphere final : public Shape {
         explicit Sphere(const ColorDbl &c, Vertex center, float radius = 0.f)

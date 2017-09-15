@@ -11,8 +11,7 @@
 namespace rays {
 
     //using Vertex = Eigen::Matrix<float, 4,1>;
-    using Vertex = Vector<float>;
-
+    using Vertex = Vector4<float>;
 
 }
 #endif //RAYTRACER_VERTEX_H

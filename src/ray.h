@@ -9,7 +9,6 @@
 #include "vector.h"
 #include "vertex.h"
 #include "colordbl.h"
-#include "triangle.h"
 #include "direction.h"
 
 namespace rays {

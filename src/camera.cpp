@@ -112,6 +112,7 @@ namespace rays {
         }
 
         // calculate surface radiance
+//        Direction n =
 
         if (depth + 1 < maxDepth) {
             // trace reflection and refraction rays recursively

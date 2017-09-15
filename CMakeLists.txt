@@ -19,7 +19,7 @@ set(SOURCES
         src/scene.cpp
         src/triangle.cpp
         src/vector.h
-        src/trianglemesh.cpp)
+        src/trianglemesh.cpp src/sphere.cpp)
 set(HEADERS
         src/common.h
         src/camera.h

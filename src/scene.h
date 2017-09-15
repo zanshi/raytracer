@@ -7,8 +7,6 @@
 
 #include "common.h"
 #include "shape.h"
-#include "triangle.h"
-#include "trianglemesh.h"
 #include "light.h"
 
 namespace rays {

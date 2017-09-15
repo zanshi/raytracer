@@ -5,6 +5,7 @@
 #ifndef RAYTRACER_OBJECT_H
 #define RAYTRACER_OBJECT_H
 
+#include "common.h"
 #include "shape.h"
 #include "material.h"
 

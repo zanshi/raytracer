@@ -5,6 +5,7 @@
 #ifndef RAYTRACER_LIGHT_H
 #define RAYTRACER_LIGHT_H
 
+#include "common.h"
 #include "vertex.h"
 #include "colordbl.h"
 

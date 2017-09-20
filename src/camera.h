@@ -17,9 +17,8 @@ namespace rays {
     class Camera {
         using CameraPlane = std::vector<std::vector<Pixel>>;
     public:
-        //Camera(std::initializer_list<Vertex> eyeList, unsigned int x, unsigned int y);
 
-        explicit Camera(std::vector<Vertex> eyes = {{-2, 0, 0, 1}}, unsigned int x = 1000, unsigned int y = 1000,
+        explicit Camera(std::vector<Vertex> eyes = {{-2, 0, 0}}, unsigned int x = 1000, unsigned int y = 1000,
                         unsigned int currEyeIdx = 0) : eyes(std::move(eyes)),
                                                        plane(x, std::vector<Pixel>(y)),
                                                        eyeIdx(currEyeIdx), dx(2.0f / x) {}

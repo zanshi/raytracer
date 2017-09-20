@@ -18,6 +18,8 @@ namespace rays {
 
         bool rayIntersection(Ray &ray) const override;
 
+        float area() const override;
+
         const Vertex center;
         const float r{1.f};
 

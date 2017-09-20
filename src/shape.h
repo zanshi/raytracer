@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "colordbl.h"
+#include "direction.h"
 
 namespace rays {
 
@@ -16,6 +17,7 @@ namespace rays {
         virtual ~Shape() = default;
 
         virtual bool rayIntersection(Ray &ray) const = 0;
+        virtual float area() const = 0;
 
         ColorDbl color;
     };

@@ -10,7 +10,7 @@
 
 namespace rays {
 
-    using Direction = Vector3<float>;
+    //using Direction = Vector3<float>;
 
 }
 

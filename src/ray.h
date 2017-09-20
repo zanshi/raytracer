@@ -30,13 +30,14 @@ namespace rays {
         Ray(const Vertex &origin, const Vertex &end)
                 : o(origin), e(end) {}
 
-        const Vertex o{0, 0, 0, 1}; // origin
-        std::shared_ptr<Ray> parent;
-        std::shared_ptr<Ray> T;
-        std::shared_ptr<Ray> R;
-        Vertex e{0, 0, 0, 1}; // end
+        const Vertex o{0, 0, 0}; // origin
+//        std::shared_ptr<Ray> parent;
+//        std::shared_ptr<Ray> T;
+//        std::shared_ptr<Ray> R;
+        Vertex e{0, 0, 0}; // end
         //Direction d {0,0,0}; // normalized direction vector
         ColorDbl color{0, 0, 0};
+        Vector3f intersectionNormal;
         std::shared_ptr<Shape> endShape{nullptr};
     };
 }

@@ -10,14 +10,14 @@
 #include "colordbl.h"
 
 namespace rays {
-    struct Light {
-        Light() = default;
-        Light(Vertex p, ColorDbl c, double i) : pos(p), color(c), intensity(i) {}
+    class Light {
 
+    protected:
+        explicit Light(ColorDbl c) : color(c) {}
+
+    public:
         // We use point lights -> only need position
-        Vertex pos{};
         ColorDbl color{};
-        double intensity{};
     };
 }
 

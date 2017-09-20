@@ -8,7 +8,7 @@
 namespace rays {
 
     bool Sphere::rayIntersection(Ray &ray) const {
-        const Vertex d = ray.e - ray.o;
+        const Vector3f d = ray.e - ray.o;
         const float a = d.dot(d);
         const float b = 2.0f * (d.dot(ray.o - center));
         const float c = (ray.o - center).dot(ray.o - center) - (r * r);
@@ -26,5 +26,9 @@ namespace rays {
         ray.e = ray.o + std::min(d1, d2) * d;
 
         return true;
+    }
+
+    float Sphere::area() const {
+        return static_cast<float>(4.0f * M_PI * r*r);
     }
 }

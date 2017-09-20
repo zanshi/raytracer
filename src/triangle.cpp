@@ -11,14 +11,14 @@ namespace rays {
     bool rays::Triangle::rayIntersection(Ray &ray) const {
         // Möller-Trumbore
         // Based on the canonical implementation
-        const Vertex &v0 = mesh->V->operator[](indices[0]);
-        const Vertex &v1 = mesh->V->operator[](indices[1]);
-        const Vertex &v2 = mesh->V->operator[](indices[2]);
+        const auto &v0 = getV0();
+        const auto &v1 = getV1();
+        const auto &v2 = getV2();
 
-        const Vertex e1 = v1 - v0;
-        const Vertex e2 = v2 - v0;
-        const Vertex dir = ray.e - ray.o;
-        const Vertex P = dir.cross(e2);
+        const auto e1 = v1 - v0;
+        const auto e2 = v2 - v0;
+        const auto dir = ray.e - ray.o;
+        const auto P = dir.cross(e2);
 
         // Use determinant to bail out early in case the triangle is facing away
         double det = e1.dot(P);
@@ -28,14 +28,14 @@ namespace rays {
             return false;
         }
         // Test bounds for u
-        const Vertex T = ray.o - v0;
+        const Vector3f T = ray.o - v0;
         double u = T.dot(P);
         if (u < 0.0 || u > det) {
             return false;
         }
 
         // Test bounds for v
-        const Vertex Q = T.cross(e1);
+        const auto Q = T.cross(e1);
         double v = dir.dot(Q);
         if (v < 0.0 || u + v > det) {
             return false;
@@ -55,4 +55,24 @@ namespace rays {
 //#endif
         return true;
     }
+
+    float Triangle::area() const {
+        const auto& v0 = getV0();
+        const auto& v1 = getV1();
+        const auto& v2 = getV2();
+        return 0.5f * ((v1 - v0).cross(v2 - v0)).length();
+    }
+
+    const Vertex &Triangle::getV0() const {
+        return mesh->V->operator[](indices[0]);
+    }
+
+    const Vertex &Triangle::getV1() const {
+        return mesh->V->operator[](indices[1]);
+    }
+
+    const Vertex &Triangle::getV2() const {
+        return mesh->V->operator[](indices[2]);
+    }
+
 }

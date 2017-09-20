@@ -19,9 +19,12 @@
 
 namespace rays {
 
-    // Global forward declarations
+    // Global forward declarations (reduces compilation times)
     template<typename T>
-    struct Vector;
+    struct Vector3;
+
+    template<typename T>
+    struct Vertex3;
 
     class Camera;
     class Scene;
@@ -36,7 +39,10 @@ namespace rays {
     struct Pixel;
     struct ColorDbl;
     struct Material;
-    struct Light;
+
+    class Light;
+    class PointLight;
+    class AreaLight;
 
 
 } // namespace rays

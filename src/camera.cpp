@@ -27,13 +27,17 @@ namespace rays {
             for (auto j = 0; j < plane[0].size(); j++) {
                 // Determine position on camera plane
                 // TODO Refactor this to a function
-                auto pointOnPlane = Vertex{0, i * dx - offset, j * dx - offset, 1.0};
+                auto pointOnPlane = Vertex{0, i * dx - offset, j * dx - offset};
                 // Create eye -> camera plane ray
                 auto ray = Ray(eyes[eyeIdx], pointOnPlane);
 
                 // First intersection test
                 // TODO Refactor
-                if (scene.intersect(ray)) {
+
+                bool intersected = scene.intersect(ray);
+
+
+                if (intersected) {
                     // Add contribution from light sources
                     for (auto &&l : scene.lights) {
 
@@ -111,11 +115,18 @@ namespace rays {
             return L;
         }
 
+        // transparent -> whitted
+        // every other -> monte-carlo
+
         // calculate surface radiance
-//        Direction n =
+        // surfaceinteraction object or something similar?
+        // or just save the intersection normal in the ray
+        Vector3f n = ray.intersectionNormal;
+        Vector3f wo = ray.o - ray.e;
 
         if (depth + 1 < maxDepth) {
             // trace reflection and refraction rays recursively
+            // L += CalculateReflectance()
         }
 
 

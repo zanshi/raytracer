@@ -18,7 +18,7 @@ namespace rays {
 
     struct Triangle final : public Shape {
 
-        explicit Triangle(std::shared_ptr<TriangleMesh> m, std::array<unsigned int, 3> inds, Direction n,
+        explicit Triangle(std::shared_ptr<TriangleMesh> m, std::array<unsigned int, 3> inds, Vector3f n,
                           ColorDbl c)
                 : mesh(std::move(m)), indices(inds), normal(std::move(n)), Shape(c) {}
 
@@ -26,9 +26,15 @@ namespace rays {
 
         bool rayIntersection(Ray &ray) const override;
 
+        float area() const override;
+
+        const Vertex& getV0() const;
+        const Vertex& getV1() const;
+        const Vertex& getV2() const;
+
         std::shared_ptr<TriangleMesh> mesh;
         std::array<unsigned int, 3> indices;
-        Direction normal;
+        Vector3f normal;
 
     };
 }

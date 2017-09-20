@@ -29,20 +29,20 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
     // Unique vertex list
     auto vertices = std::make_unique<std::vector<Vertex>>();
 
-    Vertex v0(-3.0, 0.0, -5.0, 1.0);
-    Vertex v1(0.0, -6.0, -5.0, 1.0);
-    Vertex v2(10.0, -6.0, -5.0, 1.0);
-    Vertex v3(13.0, 0.0, -5.0, 1.0);
-    Vertex v4(10.0, 6.0, -5.0, 1.0);
-    Vertex v5(0.0, 6.0, -5.0, 1.0);
+    Vertex v0(-3.0, 0.0, -5.0);
+    Vertex v1(0.0, -6.0, -5.0);
+    Vertex v2(10.0, -6.0, -5.0);
+    Vertex v3(13.0, 0.0, -5.0);
+    Vertex v4(10.0, 6.0, -5.0);
+    Vertex v5(0.0, 6.0, -5.0);
 
     // Ceiling
-    Vertex v6(-3.0, 0.0, 5.0, 1.0);
-    Vertex v7(0.0, -6.0, 5.0, 1.0);
-    Vertex v8(10.0, -6.0, 5.0, 1.0);
-    Vertex v9(13.0, 0.0, 5.0, 1.0);
-    Vertex v10(10.0, 6.0, 5.0, 1.0);
-    Vertex v11(0.0, 6.0, 5.0, 1.0);
+    Vertex v6(-3.0, 0.0, 5.0);
+    Vertex v7(0.0, -6.0, 5.0);
+    Vertex v8(10.0, -6.0, 5.0);
+    Vertex v9(13.0, 0.0, 5.0);
+    Vertex v10(10.0, 6.0, 5.0);
+    Vertex v11(0.0, 6.0, 5.0);
 
     vertices->push_back(v0);
     vertices->push_back(v1);
@@ -128,12 +128,12 @@ Scene setupScene() {
    // Create scene
     std::vector<std::shared_ptr<Shape>> world = createWorld();
     // Add a sphere
-    auto sphere = std::make_shared<Sphere>(Sphere({1, 0, 0}, {5, 0, 2, 1}, 1.5f));
+    auto sphere = std::make_shared<Sphere>(Sphere({1, 0, 0}, {5, 0, 2}, 1.5f));
     world.insert(world.begin(), sphere);
 //    world.push_back(sphere);
 
     // Create a point light
-    std::vector<Light> lights{PointLight({0, 0, 3, 1}, {1, 1, 1}, 1.0)};
+    std::vector<Light> lights{PointLight({0, 0, 3}, {1, 1, 1})};
 
     return Scene(std::move(world), std::move(lights));
 
@@ -142,8 +142,8 @@ Scene setupScene() {
 Camera setupCamera() {
     // Create camera "eyes"
     std::vector<Vertex> eyes(2);
-    eyes[0] = Vertex(-2.0, 0, 0, 1);
-    eyes[1] = Vertex(-0.5, 0, 0, 1);
+    eyes[0] = Vertex(-2.0, 0, 0);
+    eyes[1] = Vertex(-0.5, 0, 0);
 
     return Camera(eyes, 1000, 1000, 1);
 }

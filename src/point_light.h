@@ -9,9 +9,12 @@
 #include "light.h"
 
 namespace rays {
-    struct PointLight final : public Light {
-        PointLight() : Light() {}
-        PointLight(Vertex p, ColorDbl c, double i) : Light(p, c, i) {}
+    class PointLight final : public Light {
+    public:
+        explicit PointLight(ColorDbl c, Vertex pos) : Light(c), pos(pos) {}
+
+        Vertex pos{};
+
     };
 }
 

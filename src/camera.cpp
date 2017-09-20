@@ -28,20 +28,24 @@ namespace rays {
                 // Determine position on camera plane
                 // TODO Refactor this to a function
                 auto pointOnPlane = Vertex{0, i * dx - offset, j * dx - offset};
+
                 // Create eye -> camera plane ray
                 auto ray = Ray(eyes[eyeIdx], pointOnPlane);
 
                 // First intersection test
-                // TODO Refactor
-
                 bool intersected = scene.intersect(ray);
 
+                // Need to determine if the intersected
 
                 if (intersected) {
+
+
                     // Add contribution from light sources
                     for (auto &&l : scene.lights) {
 
                     }
+
+
                     auto &&pixel = plane[i][j];
                     pixel.color = ray.color; // For now set pixel color to ray color
                     pixel.rays.emplace_back(std::make_shared<Ray>(ray)); // Save ray in pixel
@@ -106,27 +110,40 @@ namespace rays {
 
     ColorDbl Camera::integrate(Ray &ray, const Scene &scene, int depth) const {
 
-        ColorDbl L{0.,0.,0.};
-
-        if(!scene.intersect(ray)) {
-            for(auto && l : scene.lights) {
-                // Add light contributions
-            }
-            return L;
-        }
+        ColorDbl L{0., 0., 0.};
 
         // transparent -> whitted
         // every other -> monte-carlo
 
-        // calculate surface radiance
-        // surfaceinteraction object or something similar?
-        // or just save the intersection normal in the ray
-        Vector3f n = ray.intersectionNormal;
-        Vector3f wo = ray.o - ray.e;
+        // We loop and accumulate light until a termination condition is met
+        // Either from max depth or from Russian Roulette
 
-        if (depth + 1 < maxDepth) {
-            // trace reflection and refraction rays recursively
-            // L += CalculateReflectance()
+        int bounces = 0;
+
+        for (bounces = 0;; ++bounces) {
+
+            bool intersected = scene.intersect(ray);
+
+            if (!intersected || bounces >= maxDepth) break;
+
+            // Check the intersection surface
+            // Different behaviour depending on surface type
+            // Transparent -> Whitted
+            // Every other -> Monte-Carlo
+
+
+            // calculate surface radiance
+            // surfaceinteraction object or something similar?
+            // or just save the intersection normal in the ray
+            Vector3f n = ray.intersectionNormal;
+            Vector3f wo = ray.o - ray.e;
+            Vector3f v1 = wo - (wo.dot(n) * n);
+
+
+            if (depth + 1 < maxDepth) {
+                // trace reflection and refraction rays recursively
+                // L += CalculateReflectance()
+            }
         }
 
 

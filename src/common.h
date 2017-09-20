@@ -29,7 +29,7 @@ namespace rays {
     class Camera;
     class Scene;
 
-    struct Object;
+    struct SceneObject;
     struct Shape;
     struct Sphere;
     struct Triangle;

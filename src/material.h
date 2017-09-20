@@ -10,6 +10,9 @@
 
 namespace rays {
 
+    // Need:
+    // Color
+    // BRDF
     struct Material {
         ColorDbl color;
 

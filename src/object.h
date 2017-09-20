@@ -11,7 +11,10 @@
 
 namespace rays {
 
-    struct Object {
+    struct SceneObject {
+
+        SceneObject(const std::vector<std::shared_ptr<Shape>> &shapes,
+                    const std::vector<std::shared_ptr<Material>> &materials) : shapes(shapes), materials(materials) {}
 
         std::vector<std::shared_ptr<Shape>> shapes;
         std::vector<std::shared_ptr<Material>> materials;

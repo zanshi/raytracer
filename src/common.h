@@ -15,7 +15,7 @@
 #include <utility>
 #include <initializer_list>
 #include <cmath>
-
+#include <random>
 
 namespace rays {
 
@@ -29,20 +29,26 @@ namespace rays {
     class Camera;
     class Scene;
 
-    struct SceneObject;
+    class SceneObject;
     struct Shape;
     struct Sphere;
     struct Triangle;
     struct TriangleMesh;
 
+    struct IntersectionInfo;
+
     struct Ray;
     struct Pixel;
     struct ColorDbl;
     struct Material;
+    struct BSDF;
 
     class Light;
     class PointLight;
     class AreaLight;
+
+    constexpr const float M_PI = 3.14159265359f;
+    constexpr const float invPI = 1.0f / M_PI;
 
 
 } // namespace rays

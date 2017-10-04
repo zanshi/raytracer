@@ -12,14 +12,13 @@
 namespace rays {
 
     struct Shape {
-        explicit Shape(ColorDbl c) : color(c) {}
 
         virtual ~Shape() = default;
 
-        virtual bool rayIntersection(Ray &ray) const = 0;
+        virtual bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;
+
         virtual float area() const = 0;
 
-        ColorDbl color;
     };
 
 }

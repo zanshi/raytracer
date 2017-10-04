@@ -17,7 +17,7 @@ namespace rays {
 
     public:
         // We use point lights -> only need position
-        ColorDbl color{};
+        ColorDbl color;
     };
 }
 

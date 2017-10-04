@@ -25,19 +25,13 @@ namespace rays {
         // get t with möller-trumbore
         // calc real intersection point with x(t)
 
-        Ray() = default;
+        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d), t(std::numeric_limits<float>::max()) {}
 
-        Ray(const Vertex &origin, const Vertex &end)
-                : o(origin), e(end) {}
-
-        const Vertex o{0, 0, 0}; // origin
-//        std::shared_ptr<Ray> parent;
-//        std::shared_ptr<Ray> T;
-//        std::shared_ptr<Ray> R;
-        Vertex e{0, 0, 0}; // end
-        //Direction d {0,0,0}; // normalized direction vector
-        ColorDbl color{0, 0, 0};
+        const Vertex3f o{0, 0, 0}; // origin
+        Vector3f d;
+        float t;
         Vector3f intersectionNormal;
+        std::shared_ptr<Material> material;
         std::shared_ptr<Shape> endShape{nullptr};
     };
 }

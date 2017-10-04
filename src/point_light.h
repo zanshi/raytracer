@@ -11,9 +11,9 @@
 namespace rays {
     class PointLight final : public Light {
     public:
-        explicit PointLight(ColorDbl c, Vertex pos) : Light(c), pos(pos) {}
+        explicit PointLight(ColorDbl c, Vertex3f pos) : Light(c), pos(pos) {}
 
-        Vertex pos{};
+        Vertex3f pos{};
 
     };
 }

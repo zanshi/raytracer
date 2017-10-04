@@ -88,6 +88,12 @@ namespace rays {
             return v / s;
         }
 
+
+        // Negate
+        Vector3<T> operator-() const {
+            return Vector3<T>(-x, -y, -z);
+        }
+
         // Vector specific operators
 
         T dot(const Vector3<T> &rhs) const {
@@ -109,10 +115,10 @@ namespace rays {
         }
 
         float lengthSquared() const {
-            return x*x + y*y + z*z;
+            return x * x + y * y + z * z;
         }
 
-        friend Vector3<T> normalize(const Vector3<T>& v) {
+        friend Vector3<T> normalize(const Vector3<T> &v) {
             return v / v.length();
         }
 

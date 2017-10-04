@@ -5,10 +5,11 @@
 #include "triangle.h"
 #include "ray.h"
 #include "vertex.h"
+#include "intersectioninfo.h"
 
 namespace rays {
 
-    bool rays::Triangle::rayIntersection(Ray &ray) const {
+    bool Triangle::intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const {
         // Möller-Trumbore
         // Based on the canonical implementation
         const auto &v0 = getV0();
@@ -17,7 +18,7 @@ namespace rays {
 
         const auto e1 = v1 - v0;
         const auto e2 = v2 - v0;
-        const auto dir = ray.e - ray.o;
+        const auto dir = ray.d;
         const auto P = dir.cross(e2);
 
         // Use determinant to bail out early in case the triangle is facing away
@@ -43,35 +44,37 @@ namespace rays {
 
         // We have a match!
         // Calculate t
-        double t = Q.dot(e2);
+        float t = Q.dot(e2);
+        if (t > *tHit) { return false; } // Bailout if intersection point is further away
         double invDet = 1.0 / det;
         t *= invDet;
         u *= invDet;
         v *= invDet;
 
-        // Update ray intersection point
-        ray.e = ray.o + t * dir;
+        Vertex3 end = ray.o + t * dir;
+
+        *isect = IntersectionInfo(end, ray.o - end, normal, this);
 
 //#endif
         return true;
     }
 
     float Triangle::area() const {
-        const auto& v0 = getV0();
-        const auto& v1 = getV1();
-        const auto& v2 = getV2();
+        const auto &v0 = getV0();
+        const auto &v1 = getV1();
+        const auto &v2 = getV2();
         return 0.5f * ((v1 - v0).cross(v2 - v0)).length();
     }
 
-    const Vertex &Triangle::getV0() const {
+    const Vertex3f &Triangle::getV0() const {
         return mesh->V->operator[](indices[0]);
     }
 
-    const Vertex &Triangle::getV1() const {
+    const Vertex3f &Triangle::getV1() const {
         return mesh->V->operator[](indices[1]);
     }
 
-    const Vertex &Triangle::getV2() const {
+    const Vertex3f &Triangle::getV2() const {
         return mesh->V->operator[](indices[2]);
     }
 

@@ -9,10 +9,11 @@
 #include "triangle.h"
 #include "vertex.h"
 #include "sphere.h"
+#include "sceneobject.h"
 
 using namespace rays;
 
-std::vector<std::shared_ptr<Shape>> createWorld() {
+std::vector<std::shared_ptr<SceneObject>> createWorld() {
 
     // Define vertices
     // Define indices
@@ -27,22 +28,22 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
     std::vector<Triangle> scene;
     // Floor
     // Unique vertex list
-    auto vertices = std::make_unique<std::vector<Vertex>>();
+    auto vertices = std::make_unique<std::vector<Vertex3f>>();
 
-    Vertex v0(-3.0, 0.0, -5.0);
-    Vertex v1(0.0, -6.0, -5.0);
-    Vertex v2(10.0, -6.0, -5.0);
-    Vertex v3(13.0, 0.0, -5.0);
-    Vertex v4(10.0, 6.0, -5.0);
-    Vertex v5(0.0, 6.0, -5.0);
+    Vertex3f v0(-3.0, 0.0, -5.0);
+    Vertex3f v1(0.0, -6.0, -5.0);
+    Vertex3f v2(10.0, -6.0, -5.0);
+    Vertex3f v3(13.0, 0.0, -5.0);
+    Vertex3f v4(10.0, 6.0, -5.0);
+    Vertex3f v5(0.0, 6.0, -5.0);
 
     // Ceiling
-    Vertex v6(-3.0, 0.0, 5.0);
-    Vertex v7(0.0, -6.0, 5.0);
-    Vertex v8(10.0, -6.0, 5.0);
-    Vertex v9(13.0, 0.0, 5.0);
-    Vertex v10(10.0, 6.0, 5.0);
-    Vertex v11(0.0, 6.0, 5.0);
+    Vertex3f v6(-3.0, 0.0, 5.0);
+    Vertex3f v7(0.0, -6.0, 5.0);
+    Vertex3f v8(10.0, -6.0, 5.0);
+    Vertex3f v9(13.0, 0.0, 5.0);
+    Vertex3f v10(10.0, 6.0, 5.0);
+    Vertex3f v11(0.0, 6.0, 5.0);
 
     vertices->push_back(v0);
     vertices->push_back(v1);
@@ -57,6 +58,8 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
     vertices->push_back(v10);
     vertices->push_back(v11);
 
+    Material diffuseRed {};
+
     ColorDbl lightred{1.0, 0.5, 0.5};
     ColorDbl lightgreen{0.5, 1.0, 0.5};
     ColorDbl lightblue{0.5, 0.5, 1.0};
@@ -69,38 +72,45 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
     auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
 
     // Connect everything
-    // Floor
-//    Triangle t0 ({v0, v1, v5}, {0, 0, 1}, white);
-    Triangle t0(mesh, {0, 1, 5}, {0, 0, 1}, white);
-    Triangle t1(mesh, {1, 2, 5}, {0, 0, 1}, white);
-    Triangle t2(mesh, {2, 4, 5}, {0, 0, 1}, white);
-    Triangle t3(mesh, {2, 3, 4}, {0, 0, 1}, white);
+    // Floor, white
+    Triangle t0(mesh, {0, 1, 5}, {0, 0, 1});
+    Triangle t1(mesh, {1, 2, 5}, {0, 0, 1});
+    Triangle t2(mesh, {2, 4, 5}, {0, 0, 1});
+    Triangle t3(mesh, {2, 3, 4}, {0, 0, 1});
 
-    // Ceiling
-    Triangle t4{mesh, {7, 6, 11}, {0, 0, -1}, white};
-    Triangle t5{mesh, {7, 11, 8}, {0, 0, -1}, white};
-    Triangle t6{mesh, {8, 11, 10}, {0, 0, -1}, white};
-    Triangle t7{mesh, {8, 10, 9}, {0, 0, -1}, white};
+    // Ceiling, white
+    Triangle t4{mesh, {7, 6, 11}, {0, 0, -1}};
+    Triangle t5{mesh, {7, 11, 8}, {0, 0, -1}};
+    Triangle t6{mesh, {8, 11, 10}, {0, 0, -1}};
+    Triangle t7{mesh, {8, 10, 9}, {0, 0, -1}};
 
-    // -y wall (fix normals)
-    Triangle t8{mesh, {0, 6, 1}, {0, 0, -1}, yellow};
-    Triangle t9{mesh, {1, 6, 7}, {0, 0, -1}, yellow};
-    Triangle t10{mesh, {1, 7, 2}, {0, -1, 0}, magenta};
-    Triangle t11{mesh, {2, 7, 8}, {0, -1, 0}, magenta};
-    Triangle t12{mesh, {2, 8, 3}, {0, 0, -1}, cyan};
-    Triangle t13{mesh, {3, 8, 9}, {0, 0, -1}, cyan};
+    // -y wall (fix normals), different colours
+    Triangle t8{mesh, {0, 6, 1}, {0, 0, -1}};
+    Triangle t9{mesh, {1, 6, 7}, {0, 0, -1}};
+    Triangle t10{mesh, {1, 7, 2}, {0, -1, 0}};
+    Triangle t11{mesh, {2, 7, 8}, {0, -1, 0}};
+    Triangle t12{mesh, {2, 8, 3}, {0, 0, -1}};
+    Triangle t13{mesh, {3, 8, 9}, {0, 0, -1}};
 
-    // +y wall (fix normals)
-    Triangle t14{mesh, {0, 5, 11}, {0, 0, -1}, lightblue};
-    Triangle t15{mesh, {0, 11, 6}, {0, 0, -1}, lightblue};
-    Triangle t16{mesh, {5, 4, 10}, {0, 0, 1}, lightred};
-    Triangle t17{mesh, {5, 10, 11}, {0, 0, 1}, lightred};
-    Triangle t18{mesh, {4, 3, 9}, {0, 0, -1}, lightgreen};
-    Triangle t19{mesh, {4, 9, 10}, {0, 0, -1}, lightgreen};
+    // +y wall (fix normals), different colours
+    Triangle t14{mesh, {0, 5, 11}, {0, 0, -1}};
+    Triangle t15{mesh, {0, 11, 6}, {0, 0, -1}};
+    Triangle t16{mesh, {5, 4, 10}, {0, 0, 1}};
+    Triangle t17{mesh, {5, 10, 11}, {0, 0, 1}};
+    Triangle t18{mesh, {4, 3, 9}, {0, 0, -1}};
+    Triangle t19{mesh, {4, 9, 10}, {0, 0, -1}};
 
-    std::vector<std::shared_ptr<Shape>> tris;
+//    std::vector<std::shared_ptr<Shape>> tris;
+    Lambertian wall_white(white, )
+
+    Material wall_white()
+
+    std::vector<std::shared_ptr<SceneObject>> objects;
+
+    objects.emplace_back(std::make_shared(SceneObject(t0,)))
 
     tris.emplace_back(std::make_shared<Triangle>(t0));
+
     tris.emplace_back(std::make_shared<Triangle>(t1));
     tris.emplace_back(std::make_shared<Triangle>(t2));
     tris.emplace_back(std::make_shared<Triangle>(t3));
@@ -121,19 +131,24 @@ std::vector<std::shared_ptr<Shape>> createWorld() {
     tris.emplace_back(std::make_shared<Triangle>(t18));
     tris.emplace_back(std::make_shared<Triangle>(t19));
 
+
+
     return tris;
 }
 
+
 Scene setupScene() {
    // Create scene
-    std::vector<std::shared_ptr<Shape>> world = createWorld();
+    std::vector<std::shared_ptr<SceneObject>> world = createWorld();
     // Add a sphere
-    auto sphere = std::make_shared<Sphere>(Sphere({1, 0, 0}, {5, 0, 2}, 1.5f));
+    auto sphere = std::make_shared<Sphere>(Sphere({5, 0, 2}, 1.5f));
     world.insert(world.begin(), sphere);
 //    world.push_back(sphere);
 
     // Create a point light
-    std::vector<Light> lights{PointLight({0, 0, 3}, {1, 1, 1})};
+    std::vector<std::shared_ptr<Light>> lights;
+    auto pointLight = std::make_shared({0, 0, 3}, {1, 1, 1});
+    lights.emplace_back(pointLight);
 
     return Scene(std::move(world), std::move(lights));
 
@@ -141,9 +156,9 @@ Scene setupScene() {
 
 Camera setupCamera() {
     // Create camera "eyes"
-    std::vector<Vertex> eyes(2);
-    eyes[0] = Vertex(-2.0, 0, 0);
-    eyes[1] = Vertex(-0.5, 0, 0);
+    std::vector<Vertex3f> eyes(2);
+    eyes[0] = Vertex3f(-2.0, 0, 0);
+    eyes[1] = Vertex3f(-0.5, 0, 0);
 
     return Camera(eyes, 1000, 1000, 1);
 }

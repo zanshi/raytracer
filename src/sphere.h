@@ -11,16 +11,16 @@
 
 namespace rays {
     struct Sphere final : public Shape {
-        explicit Sphere(const ColorDbl &c, Vertex center, float radius = 0.f)
-                : Shape(c), center(center), r(radius) {}
+
+        Sphere(const Vertex3f &center, const float r) : center(center), r(r) {}
 
         ~Sphere() final = default;
 
-        bool rayIntersection(Ray &ray) const override;
+        bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const override;
 
         float area() const override;
 
-        const Vertex center;
+        const Vertex3f center;
         const float r{1.f};
 
     };

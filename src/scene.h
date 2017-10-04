@@ -6,21 +6,21 @@
 #define RAYTRACER_SCENE_H
 
 #include "common.h"
-#include "shape.h"
 #include "light.h"
+#include "sceneobject.h"
 
 namespace rays {
     class Scene {
 
     public:
 
-        explicit Scene(std::vector<std::shared_ptr<Shape>> s, std::vector<Light> l) : shapes{std::move(s)},
-                                                                                      lights{std::move(l)} {}
+        explicit Scene(std::vector<std::shared_ptr<SceneObject>> s, std::vector<std::shared_ptr<Light>> l)
+                : objects{std::move(s)}, lights{std::move(l)} {}
 
-        bool intersect(Ray &ray) const;
+        bool intersect(Ray &ray, IntersectionInfo *isect) const;
 
-        std::vector<std::shared_ptr<Shape>> shapes{nullptr};
-        std::vector<Light> lights{};
+        std::vector<std::shared_ptr<SceneObject>> objects{nullptr};
+        std::vector<std::shared_ptr<Light>> lights{};
 
     };
 }

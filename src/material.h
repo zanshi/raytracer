@@ -7,14 +7,15 @@
 
 #include "common.h"
 #include "colordbl.h"
+#include "bsdf.h"
 
 namespace rays {
 
     // Need:
-    // Color
     // BRDF
     struct Material {
-        ColorDbl color;
+        explicit Material(const std::shared_ptr<BSDF> &brdf) : brdf(brdf) {}
+        const std::shared_ptr<BSDF> brdf;
 
     };
 

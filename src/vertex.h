@@ -23,26 +23,26 @@ namespace rays {
         T y{0};
         T z{0};
 
-        Vertex3<T> operator+(const Vector3<T> &v) const {
+        Vertex3<T> operator+(const Vector3 <T> &v) const {
             return Vertex3<T>(x + v.x, y + v.y, z + v.z);
         }
 
-        Vertex3<T> &operator+=(const Vector3<T> &rhs) {
+        Vertex3<T> &operator+=(const Vector3 <T> &rhs) {
             x += rhs.x;
             y += rhs.y;
             z += rhs.z;
             return *this;
         }
 
-        Vector3<T> operator-(const Vertex3<T> &v) const {
+        Vector3 <T> operator-(const Vertex3<T> &v) const {
             return Vector3<T>(x - v.x, y - v.y, z - v.z);
         }
 
-        Vertex3<T> operator-(const Vector3<T> &v) const {
+        Vertex3<T> operator-(const Vector3 <T> &v) const {
             return Vertex3<T>(x - v.x, y - v.y, z - v.z);
         }
 
-        Vertex3<T>& operator-=(const Vector3<T> &v) {
+        Vertex3<T> &operator-=(const Vector3 <T> &v) {
             x -= v.x;
             y -= v.y;
             z -= v.z;
@@ -79,10 +79,9 @@ namespace rays {
         }
 
 
-
     };
 
-    using Vertex = Vertex3<float>;
+    using Vertex3f = Vertex3<float>;
 
 }
 #endif //RAYTRACER_VERTEX_H

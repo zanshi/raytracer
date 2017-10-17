@@ -7,22 +7,26 @@
 
 #include "common.h"
 #include "shape.h"
-#include "material.h"
+#include "bsdf.h"
 #include "area_light.h"
 
 namespace rays {
 
     class SceneObject {
     public:
-        explicit SceneObject(const std::shared_ptr<Shape> &s, const std::shared_ptr<Material> &m,
+        explicit SceneObject(const std::shared_ptr<Shape> &s, const std::shared_ptr<BSDF> &b,
                     const std::shared_ptr<AreaLight> &l = nullptr)
-                : shape(s), material(m), areaLight(l) {}
+                : shape(s), bsdf(b), areaLight(l) {}
 
         bool intersect(Ray &ray, IntersectionInfo *isect) const;
 
+        const AreaLight* getAreaLight() const {
+            return areaLight.get();
+        }
+
         const std::shared_ptr<Shape> shape;
-        const std::shared_ptr<Material> material;
-        const std::shared_ptr<AreaLight> areaLight{nullptr};
+        const std::shared_ptr<BSDF> bsdf;
+        std::shared_ptr<AreaLight> areaLight;
 
     };
 

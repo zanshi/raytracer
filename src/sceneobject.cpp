@@ -16,8 +16,9 @@ namespace rays {
 
         if (!(shape->intersect(ray, isect, &tHit))) { return false; }
 
-        ray.t = tHit;
+//        ray.t = tHit;
         isect->obj = this;
+        isect->brdf = bsdf.get();
 
         return true;
 

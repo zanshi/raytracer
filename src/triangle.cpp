@@ -51,9 +51,9 @@ namespace rays {
         u *= invDet;
         v *= invDet;
 
-        Vertex3 end = ray.o + t * dir;
+        Vertex3f end = ray.o + t * dir;
 
-        *isect = IntersectionInfo(end, ray.o - end, normal, this);
+        *isect = IntersectionInfo(end, -ray.d, normal, this);
 
 //#endif
         return true;
@@ -77,5 +77,16 @@ namespace rays {
     const Vertex3f &Triangle::getV2() const {
         return mesh->V->operator[](indices[2]);
     }
+
+    Vertex3f Triangle::getRandomPoint(RNG &rng) const {
+        float u, v;
+        do {
+            u = rng.getUniform1D();
+            v = rng.getUniform1D();
+        } while (u + v >= 1);
+
+        return (1 - u - v) * getV0() + u * getV1() + v * getV2();
+    }
+
 
 }

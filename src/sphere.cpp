@@ -9,33 +9,73 @@
 namespace rays {
 
     bool Sphere::intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const {
+
+        float t0, t1;
+
         const Vector3f d = ray.d;
+        const Vector3f L = ray.o - center;
         const float a = d.dot(d);
-        const float b = 2.0f * (d.dot(ray.o - center));
-        const float c = (ray.o - center).dot(ray.o - center) - (r * r);
+        const float b = 2.0f * (d.dot(L));
+        const float c = L.dot(L) - (r * r);
 
-        const auto discrim = std::pow((b / 2.0f), 2) - a * c;
+//        const float discrim = std::pow((b / 2.0f), 2) - a * c;
+        const auto discrim = b * b - 4 * a * c;
 
-        if (discrim < 0) { return false; } // No real solutions
-        const float rootDiscrim = sqrtf(discrim);
+        if (discrim < 0) {
+            return false;
+        } else if (discrim == 0) {
+            t0 = t1 = -0.5f * b / a;
+        } else {
+            const float rootDiscrim = std::sqrt(discrim);
+            float q = (b > 0) ?
+                      -0.5f * (b + rootDiscrim) :
+                      -0.5f * (b - rootDiscrim);
+            t0 = q / a;
+            t1 = c / q;
+        }
 
-        // Calculate the two solutions to the quadratic equation
-        const float bHalf = -(b * 0.5f);
-        const auto d1 = bHalf + rootDiscrim;
-        const auto d2 = bHalf - rootDiscrim;
+        if (t0 > t1) {
+            float temp = t1;
+            t1 = t0;
+            t0 = temp;
+        }
 
-        const float minD = std::min(d1, d2);
+        if (t0 < 0) {
+            t0 = t1; // if t0 is negative, let's use t1 instead
+            if (t0 < 0) return false; // both t0 and t1 are negative
+        }
 
-        if (minD > ray.t) { return false; }
+
+        if (t0 > *tHit) {
+            return false;
+        }
+
+
+//        // No real solutions
+//
+//        // Calculate the two solutions to the quadratic equation
+//        const float bHalf = -(b * 0.5f);
+//        const float d1 = bHalf + rootDiscrim;
+//        const float d2 = bHalf - rootDiscrim;
+//
+//        const float minD = std::min(d1, d2);
+//
+//        if (minD < 0) { return false; }
+//
+//        if (minD > *tHit) { return false; }
 
         // and choose the one closest to the ray origin
         //ray.e = ray.o + std::min(d1, d2) * d;
 
-        Vertex3 end = ray.o + minD * d;
+        Vertex3f end = ray.o + t0 * d;
 
-        *isect = IntersectionInfo(end, ray.o - end, end - center, this);
+        *isect = IntersectionInfo(end, -ray.d, normalize(end - center), this);
 
         return true;
+    }
+
+    Vertex3f Sphere::getRandomPoint(RNG &rng) const {
+        return Vertex3f(); // not necessary
     }
 
     float Sphere::area() const {

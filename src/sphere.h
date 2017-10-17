@@ -20,6 +20,8 @@ namespace rays {
 
         float area() const override;
 
+        Vertex3f getRandomPoint(RNG &rng) const override;
+
         const Vertex3f center;
         const float r{1.f};
 

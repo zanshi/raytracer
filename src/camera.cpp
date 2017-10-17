@@ -10,6 +10,8 @@
 #include "intersectioninfo.h"
 #include "rng.h"
 #include "bsdf.h"
+#include "area_light.h"
+#include "colordbl.h"
 
 #include <omp.h>
 
@@ -19,46 +21,49 @@
 
 namespace rays {
 
+
     void Camera::render(const Scene &scene) {
         // Loop over each pixel
         // Tile this later
-        float offset = 1.0f - 1.0f / plane.size();
+        const float offset = 1.0f - 1.0f / plane.size();
 
+#pragma omp parallel for default(none) shared(plane, scene) schedule(dynamic, 16)
+        for (unsigned int i = 0; i < plane.size(); i++) {
+            for (unsigned int j = 0; j < plane[0].size(); j++) {
+                ColorDbl L{0, 0, 0};
+                Vector3f direction;
 
-#pragma omp parallel for
-        for (auto i = 0; i < plane.size(); i++) {
-            for (auto j = 0; j < plane[0].size(); j++) {
-                // Determine position on camera plane
-                auto direction = Vertex3f{0, i * dx - offset, j * dx - offset} - eyes[eyeIdx];
-                direction = normalize(direction);
+                for (unsigned int k = 0; k < nSamples; k++) {
 
-                // Create eye -> camera plane ray
-                auto ray = Ray(eyes[eyeIdx], direction);
+                    // Determine position on camera plane
+                    direction = normalize(Vertex3f{0, i * dx - offset, j * dx - offset} - eyes[eyeIdx]);
 
-                RNG rng;
-                ColorDbl beta{1, 1, 1};
-                ColorDbl L = trace(ray, scene, rng, 0, beta);
+                    // Create eye -> camera plane ray
+                    auto ray = Ray(eyes[eyeIdx], direction);
 
-                auto &&pixel = plane[i][j];
-                pixel.color = L; // For now set pixel color to ray color
-                pixel.rays.emplace_back(std::make_shared<Ray>(ray)); // Save ray in pixel
-                // Ray hit a shape in the scene, save for later? probably
+                    RNG rng;
+                    ColorDbl beta{1, 1, 1};
+                    L += trace(ray, scene, rng, 0, beta);
+                }
+
+                plane[i][j].color = L / nSamples;
             }
         }
-
     }
 
-    void Camera::createImage(const std::string &filename) const {
+    void Camera::createImage(const std::string &filename) {
 
         auto height = plane.size();
         auto width = plane[0].size();
 
         std::vector<unsigned char> outImg(width * height * 3);
 
+//        adjustLevels();
         double maxVal = getMaxPixelColorVal();
+        std::cout << maxVal << std::endl;
 
-        for (auto i = 0; i < plane.size(); i++) {
-            for (auto j = 0; j < plane[0].size(); j++) {
+        for (unsigned int i = 0; i < plane.size(); i++) {
+            for (unsigned int j = 0; j < plane[0].size(); j++) {
                 auto ldr = toneMap(plane[i][j].color, maxVal);
 //                std::cout << static_cast<int>(ldr[0]) << ' '
 //                          << static_cast<int>(ldr[1]) << ' '
@@ -76,21 +81,35 @@ namespace rays {
         }
     }
 
+    void Camera::adjustLevels() {
+        for (unsigned int i = 0; i < plane.size(); i++) {
+            for (unsigned int j = 0; j < plane[0].size(); j++) {
+                plane[i][j].color.r = std::sqrt(plane[i][j].color.r);
+                plane[i][j].color.g = std::sqrt(plane[i][j].color.g);
+                plane[i][j].color.b = std::sqrt(plane[i][j].color.b);
+            }
+        }
+    }
 
     ColorChar Camera::toneMap(ColorDbl c, double iMax) const {
         // Basic version
-        ColorChar rgb{0, 0, 0};
-        rgb[0] = static_cast<unsigned char>(c.r * (255.99 / iMax));
-        rgb[1] = static_cast<unsigned char>(c.g * (255.99 / iMax));
-        rgb[2] = static_cast<unsigned char>(c.b * (255.99 / iMax));
+        ColorChar rgb = {0, 0, 0};
+//        c = gammaCorrect(c);
+        c = clamp(c, 0.0, 1.0);
+//        rgb[0] = static_cast<unsigned char>(clamp(c.r * (255.99 / iMax), 0.0, 255.0));
+//        rgb[1] = static_cast<unsigned char>(clamp(c.g * (255.99 / iMax), 0.0, 255.0));
+//        rgb[2] = static_cast<unsigned char>(clamp(c.b * (255.99 / iMax), 0.0, 255.0));
+        rgb[0] = static_cast<unsigned char>(c.r * 255);
+        rgb[1] = static_cast<unsigned char>(c.g * 255);
+        rgb[2] = static_cast<unsigned char>(c.b * 255);
 
         return rgb;
     }
 
     double Camera::getMaxPixelColorVal() const {
         double maxVal = std::numeric_limits<double>::min();
-        for (int i = 0; i < plane.size(); i++) {
-            for (int j = 0; j < plane[0].size(); j++) {
+        for (unsigned int i = 0; i < plane.size(); i++) {
+            for (unsigned int j = 0; j < plane[0].size(); j++) {
                 maxVal = std::max(plane[i][j].color.r, maxVal);
                 maxVal = std::max(plane[i][j].color.g, maxVal);
                 maxVal = std::max(plane[i][j].color.b, maxVal);
@@ -102,15 +121,21 @@ namespace rays {
 
     ColorDbl Camera::trace(Ray &ray, const Scene &scene, RNG &rng, int depth, ColorDbl &beta) const {
 
-        if (depth == maxDepth) { return {0, 0, 0}; }
+        ColorDbl L{0.0, 0.0, 0.0};
 
-        // TODO: Check russian roulette
-
-        ColorDbl L{0, 0, 0};
+        if (depth == maxDepth) {
+//            std::cout << "Max depth reached. L = " << L << std::endl;
+            return L;
+        }
 
         // 1. Check intersection
         IntersectionInfo isect;
         bool intersected = scene.intersect(ray, &isect);
+
+        if (!intersected) {
+//            std::cerr << "Ray escaped scene" << std::endl;
+            return L;
+        }
 
         // Check the intersection surface
         // Different behaviour depending on surface type
@@ -123,90 +148,148 @@ namespace rays {
         // Reflected ray direction
         // wi = wo - 2 * (wo * N) * N
         Vector3f woWorld = isect.wo;
+
+//        if (woWorld.x == 0 && woWorld.y == 0 && woWorld.z == 0) {
+//            std::cout << woWorld << std::endl;
+//            std::cout << isect.p << std::endl;
+//        }
+
         Vector3f n = normalize(isect.n);
-        Vector3f wi;
 
         // Local coordinate system base vectors
         Vector3f ss = woWorld - (woWorld.dot(n)) * n;
-        Vector3f ts = n.cross(ss);
+//        Vector3f ts = n.cross(ss);
+        Vector3f ts = ss.cross(n);
 
         // Transform wo to local
         Vector3f wo = worldToLocal(ss, ts, n, woWorld);
+        wo = normalize(wo);
 
         // From here on, the calculations are in the local coordinate system of the
         // current hemisphere
 
-        switch (isect.brdf->getType()) {
-            // Whitted: Just add a diffuse light term
-            // Monte-Carlo: Use pdf and rng to calculate the reflected ray
-            case BSDF_DIFFUSE: {
-
-                // Add direct light contribution
-
-
-
-                // Reflect in random direction
-                float phi = 2 * M_PI * rng.getUniform1D();
-                float theta = std::acos(std::sqrt(rng.getUniform1D()));
-                wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
-
-                ColorDbl f = isect.brdf->fr(&wi, wo);
-
-
-                // TODO: Implement visibility check with shadow rays
-
-
-
-            }
-                break;
-
-            case BSDF_SPECULAR: {// Send reflection ray
-                // L+= specularReflection
-
-            }
-                break;
-            case BSDF_TRANSPARENT: {// Send reflection and refraction rays
-                // Don't really need a brdf here, just need to send the rays and
-                // calculate the importance contribution
-
-                Vector3f R = reflect(wo, n);
-                Vector3f T;
-
-                // TODO: beta instead of L
-
-                // ---------------------
-                // Reflection
-                float fresnelReflectionCoefficient = fresnel(n.dot(wo), isect.brdf->index);
-                Ray reflected(isect.p, localToWorld(ss, ts, n, R));
-                L += fresnelReflectionCoefficient * trace(reflected, scene, rng, depth + 1, beta) * absDot(R, n);
-
-                // ---------------------
-                // Refraction
-                if (refract(&T, wo, n, isect.brdf->index)) {
-                    Ray refracted(isect.p, localToWorld(ss, ts, n, T));
-                    L += (1 - fresnelReflectionCoefficient) * trace(refracted, scene, rng, depth + 1, beta) *
-                         absDot(T, n);
-                }
-
-            }
-                break;
+        // Intersected object is a light source. Add contribution from light and terminate.
+        if (isect.obj->getAreaLight() != nullptr) {
+//            if (depth == 0) {
+            L += isect.obj->getAreaLight()->L0;
+//            }
+            return L;
         }
 
+        const float epsilon = 1e-5f;
 
-        // 2.
-        // Diffuse:
-        //      Whitted: Terminate, calculate local lighting contribution
-        //      Monte-Carlo: Calculate random reflection ray (unless Russian roulette terminates it)
-        // Specular (mirror): Calculate reflection ray (as in Whitted)
-        // Transparent: Calculate reflection and refraction rays (as in Whitted)
-        // Area Light: Terminate
+        if (isect.brdf->getType() == BSDF_DIFFUSE) {
+            // Monte-Carlo: Use pdf and rng to calculate the reflected ray
 
+            // Add direct light contribution
+            // Send shadow rays to all light sources
+            // For every area light
 
-        // 3. Calculate direct light contribution
+            // PDF = 1/Area
+            // Draw u, v random numbers [0, 1[
+            // if u + v < 1, create end point q_i = (1 − u − v)v0 + u * v1 + v * v2
+            // v0, v1, v2 are the triangle vertices
+            // Create 10 < M < 20 endpoints
+            // Shoot shadow rays from x -> q_i - q_M
+            // Calculate V(x, q_i) and G(x, q_i)
+            // Sum (fr * V * G)
 
+            const int M = 10; // TODO move this
+
+            for (const auto &l : scene.lights) {
+                if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
+                ColorDbl Ld{0, 0, 0};
+                float pdf = 1.f / l->area;
+                for (unsigned int i = 0; i < M; i++) {
+                    Vertex3f q = l->T->getRandomPoint(rng); // random point on the triangle
+                    Vector3f wiWorld = normalize(q - isect.p);
+                    IntersectionInfo shadowIsect;
+                    Ray shadowRay(isect.p + n * epsilon, wiWorld);
+                    float tHit = std::numeric_limits<float>::max();
+                    if (l->T->intersect(shadowRay, &shadowIsect, &tHit)) {
+
+                        if (shadowIsect.shape == l->T.get()) {
+                            // No occlusion! Add contribution from this ray
+                            Vector3f wiTemp;
+//                            Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
+//                            wi = normalize(wi);
+
+                            Vector3f shadowN = normalize(shadowIsect.n);
+//                            Vector3f shadowSs = shadowIsect.wo - (shadowIsect.wo.dot(shadowN)) * shadowN;
+//                            Vector3f shadowTs = shadowSs.cross(shadowN);
+
+//                            Vector3f shadowWoLocal = worldToLocal(shadowSs, shadowTs, shadowN, shadowIsect.wo);
+//                            shadowWoLocal = normalize(shadowWoLocal);
+                            ColorDbl f = isect.brdf->fr(&wiTemp, wo);
+                            // Calculate geometric term (not 100% sure about this one)
+                            float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
+                                      distanceSquared(q, isect.p);
+                            Ld += f * G;
+                        }
+                    }
+                }
+                L += (l->area * l->L0 * Ld) / M;
+            }
+
+            // Reflect in random direction
+            float phi = ((2.f * M_PI) / P) * rng.getUniform1D();
+            // Russian roulette
+            if (phi > 2.f * M_PI) {
+                return L;
+            }
+
+            float theta = std::acos(std::sqrt(rng.getUniform1D()));
+            Vector3f wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
+            Vector3f wiWorld = normalize(localToWorld(ss, ts, n, wi));
+
+            Ray newRay(isect.p + n * epsilon * sgn(n.dot(wiWorld)), wiWorld);
+            ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
+
+            L += (reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wi, wo) * P);
+
+        } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
+            // Send reflection and refraction rays
+            // Don't really need a brdf here, just need to send the rays and
+            // calculate the importance contribution
+
+//            Vector3f R = reflect(wo, n);
+            Vector3f RWorld = reflect(woWorld, n);
+//            Vector3f R = Vector3f(-wo.x, -wo.y, wo.z);
+//            Vector3f RWorld = localToWorld(ss, ts, n, R);
+            Vector3f R = worldToLocal(ss, ts, n, RWorld);
+            RWorld = normalize(RWorld);
+//            Vector3f R = normalize(Vector3f(-wo.x, -wo.y, wo.z));
+            Vector3f T;
+
+            // ---------------------
+            // Reflection
+            float fresnelReflectionCoefficient = fresnel(RWorld.dot(n), isect.brdf->index);
+//            std::cout << fresnelReflectionCoefficient << ", " << cosTheta(R) << std::endl;
+//            Vector3f RWorld = localToWorld(ss, ts, n, R);
+//            RWorld = normalize(RWorld);
+//            std::cout << isect.n.dot(RWorld) << std::endl;
+            Ray reflected(isect.p + n * epsilon * sgn(n.dot(RWorld)), RWorld);
+            ColorDbl traced = trace(reflected, scene, rng, depth + 1, beta);
+            ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced * absDot(RWorld, n);
+            L += rColor;
+
+            // ---------------------
+            // Refraction
+            if (refract(&T, woWorld, n, isect.brdf->index)) {
+//                Vector3f TWorld = normalize(localToWorld(ss, ts, n, T));
+                Vector3f TWorld = normalize(T);
+//                std::cout << TWorld.dot(n) << std::endl;
+                Ray refracted(isect.p + n * epsilon * sgn(n.dot(TWorld)), TWorld);
+
+                ColorDbl TColor = trace(refracted, scene, rng, depth + 1, beta);
+                L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor *
+                     absDot(TWorld, n);
+            }
+        }
 
 
         return L;
     }
+
 
 }

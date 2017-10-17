@@ -19,20 +19,10 @@ namespace rays {
         // the end vertex is the start vertex for new rays -> ref/ptr
         // save 3 * 8 - 8 = 16 bytes
 
-        // use arbitrary end?
-
-        // x(t) = o + t(e - o)
-        // get t with möller-trumbore
-        // calc real intersection point with x(t)
-
-        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d), t(std::numeric_limits<float>::max()) {}
+        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d) {}
 
         const Vertex3f o{0, 0, 0}; // origin
         Vector3f d;
-        float t;
-        Vector3f intersectionNormal;
-        std::shared_ptr<Material> material;
-        std::shared_ptr<Shape> endShape{nullptr};
     };
 }
 #endif //RAYTRACER_RAY_H

@@ -28,6 +28,7 @@ namespace rays {
 
     class Camera;
     class Scene;
+    class RNG;
 
     class SceneObject;
     struct Shape;
@@ -40,16 +41,26 @@ namespace rays {
     struct Ray;
     struct Pixel;
     struct ColorDbl;
+
     struct Material;
     struct BSDF;
+    struct Lambertian;
+    struct Glass;
 
     class Light;
     class PointLight;
-    class AreaLight;
+//    class AreaLight;
 
-    constexpr const float M_PI = 3.14159265359f;
+//    constexpr const float M_PI = 3.14159265359f;
     constexpr const float invPI = 1.0f / M_PI;
 
+    template<typename T>
+    inline float clamp(const T &v, const T &lo, const T &hi) { return std::max(lo, std::min(hi, v)); }
+
+    template <typename T>
+    inline int sgn(T val) {
+        return (T(0) < val) - (val < T(0));
+    }
 
 } // namespace rays
 

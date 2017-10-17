@@ -11,6 +11,7 @@
 #include "direction.h"
 #include "trianglemesh.h"
 #include "shape.h"
+#include "rng.h"
 
 namespace rays {
 
@@ -24,6 +25,8 @@ namespace rays {
         ~Triangle() final = default;
 
         bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const override;
+
+        Vertex3f getRandomPoint(RNG &rng) const;
 
         float area() const override;
 

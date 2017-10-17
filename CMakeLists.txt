@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 project(raytracer)
 
-set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD 17)
 
-SET(CMAKE_C_COMPILER /usr/local/bin/gcc-7)
-SET(CMAKE_CXX_COMPILER /usr/local/bin/g++-7)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -O3 -march=native")
+
+
+#SET(CMAKE_C_COMPILER /usr/local/bin/gcc-7)
+#SET(CMAKE_CXX_COMPILER /usr/local/bin/g++-7)
 
 FIND_PACKAGE( OpenMP REQUIRED)
 if(OPENMP_FOUND)

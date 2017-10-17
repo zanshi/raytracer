@@ -19,24 +19,21 @@ namespace rays {
         using CameraPlane = std::vector<std::vector<Pixel>>;
     public:
 
-        explicit Camera(std::vector<Vertex3f> eyes = {{-2, 0, 0}}, unsigned int x = 1000, unsigned int y = 1000,
-                        unsigned int currEyeIdx = 0) : eyes(std::move(eyes)),
-                                                       plane(x, std::vector<Pixel>(y)),
-                                                       eyeIdx(currEyeIdx), dx(2.0f / x) {}
-
-        Camera(std::initializer_list<Vertex3f> e, unsigned int x = 1000, unsigned int y = 1000,
-               unsigned int currEyeIdx = 0) : eyes(e),
-                                              plane(x, std::vector<Pixel>(y)),
-                                              eyeIdx(currEyeIdx), dx(2.0f / x) {}
+        explicit Camera(std::vector<Vertex3f> eyes, unsigned int x, unsigned int y, unsigned int currEyeIdx,
+                        unsigned int nSamples)
+                : eyes(std::move(eyes)),
+                  plane(x, std::vector<Pixel>(y)),
+                  eyeIdx(currEyeIdx), nSamples(nSamples), dx(2.0f / x) {}
 
         void render(const Scene &scene);
 
-        void createImage(const std::string &filename) const;
+        void createImage(const std::string &filename);
 
     private:
 
         ColorDbl trace(Ray &ray, const Scene &scene, RNG &rng, int depth, ColorDbl &beta) const;
 
+        void adjustLevels();
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
         double getMaxPixelColorVal() const;
@@ -45,8 +42,10 @@ namespace rays {
         CameraPlane plane;
 
         unsigned int eyeIdx{0};
+        const unsigned int nSamples = 64;
         const float dx{0.002};
-        const int maxDepth = 10;
+        const int maxDepth = 5;
+        const float P = 0.75;
 
     };
 

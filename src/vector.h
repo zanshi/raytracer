@@ -12,8 +12,9 @@
 namespace rays {
 
     template<typename T>
-    struct Vector3 {
+    class Vector3 {
 
+    public:
         Vector3() = default;
 
         Vector3(T x, T y, T z) : x(x), y(y), z(z) {}
@@ -62,12 +63,6 @@ namespace rays {
             return Vector3<T>(x * rhs, y * rhs, z * rhs);
         }
 
-
-        template<typename U>
-        friend Vector3<T> operator*(U s, const Vector3<T> &v) {
-            return v * s;
-        }
-
         // Division
         template<typename U>
         Vector3<T> &operator/=(const U rhs) {
@@ -81,13 +76,6 @@ namespace rays {
         Vector3<T> operator/(U rhs) const {
             return Vector3<T>(x / rhs, y / rhs, z / rhs);
         }
-
-
-        template<typename U>
-        friend Vector3<T> operator/(U s, const Vector3<T> &v) {
-            return v / s;
-        }
-
 
         // Negate
         Vector3<T> operator-() const {
@@ -118,12 +106,36 @@ namespace rays {
             return x * x + y * y + z * z;
         }
 
-        friend Vector3<T> normalize(const Vector3<T> &v) {
-            return v / v.length();
-        }
+
 
 
     };
+
+    template <typename T>
+    inline Vector3<T> faceforward(const Vector3<T> &v, const Vector3<T> &v2) {
+        return (v.dot(v2) < 0.f) ? -v : v;
+    }
+
+    template<typename T>
+    Vector3<T> normalize(const Vector3<T> &v) {
+        return v / v.length();
+    }
+
+    template<typename T, typename U>
+    inline Vector3<T> operator/(U s, const Vector3<T> &v) {
+        return v / s;
+    }
+
+    template<typename T, typename U>
+    inline Vector3<T> operator*(U s, const Vector3<T> &v) {
+        return v * s;
+    }
+
+    template<typename T>
+    inline std::ostream& operator<<(std::ostream& os, const Vector3<T> & v) {
+        os << v.x << " " << v.y << " " << v.z;
+        return os;
+    }
 
     using Vector3f = Vector3<float>;
 }

@@ -5,6 +5,8 @@
 #ifndef RAYTRACER_COLORDBL_H
 #define RAYTRACER_COLORDBL_H
 
+#include <sstream>
+
 namespace rays {
     struct ColorDbl {
         ColorDbl(double r, double g, double b) : r(r), g(g), b(b) {}
@@ -26,9 +28,8 @@ namespace rays {
             return ColorDbl(r * rhs, g * rhs, b * rhs);
         }
 
-        template<typename U>
-        friend ColorDbl operator*(U s, const ColorDbl &v) {
-            return v * s;
+        ColorDbl operator*(const ColorDbl &rhs) const {
+            return ColorDbl(r * rhs.r, g * rhs.g, b * rhs.b);
         }
 
 
@@ -70,13 +71,35 @@ namespace rays {
             return ColorDbl(r / rhs, g / rhs, b / rhs);
         }
 
-
-        template<typename U>
-        friend ColorDbl operator/(U s, const ColorDbl &v) {
-            return v / s;
+        std::string toString() const {
+            std::stringstream ss;
+            ss << r << " " << g << " " << b;
+            return ss.str();
         }
 
-
     };
+
+    inline ColorDbl gammaCorrect(const ColorDbl &c) {
+        return ColorDbl(std::pow(c.r, 1.0 / 2.2), std::pow(c.g, 1.0 / 2.2), std::pow(c.b, 1.0 / 2.2));
+    }
+
+    template<typename T>
+    inline ColorDbl clamp(const ColorDbl&c, T min, T max) {
+        return ColorDbl(clamp(c.r, min, max), clamp(c.g, min, max), clamp(c.b, min, max));
+    }
+
+    inline std::ostream &operator<<(std::ostream &os, const ColorDbl &v) {
+        return os << v.toString();
+    }
+
+    template<typename U>
+    inline ColorDbl operator/(U s, const ColorDbl &v) {
+        return v / s;
+    }
+
+    template<typename U>
+    inline ColorDbl operator*(U s, const ColorDbl &v) {
+        return v * s;
+    }
 }
 #endif //RAYTRACER_COLORDBL_H

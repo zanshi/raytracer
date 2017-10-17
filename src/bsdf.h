@@ -17,39 +17,71 @@ namespace rays {
         BSDF_TRANSPARENT // Glass etc
     };
 
-    const float AIR_INDEX = 1;
+    const float AIR_INDEX = 1.0f;
 
-    Vector3f reflect(const Vector3f &wo, const Vector3f &n) {
-        return wo - 2 * (n * wo) * n;
+    inline float absDot(const Vector3f &v0, const Vector3f &v1) {
+        return std::abs(v0.dot(v1));
     }
 
-    bool refract(Vector3f *wt, const Vector3f &wi, const Vector3f &n, float index) {
-        float cosThetaI = n.dot(wi);
+    inline float cosTheta(const Vector3f& v) {
+        return v.z;
+    }
 
-        bool inside = cosThetaI > 0;
+    inline float absCosTheta(const Vector3f& v) {
+        return std::abs(v.z);
+    }
 
-        float n1 = inside ? index : AIR_INDEX;
-        float n2 = inside ? AIR_INDEX : index;
+    inline Vector3f reflect(const Vector3f &wo, const Vector3f &n) {
+        return -wo + 2 * n.dot(wo) * n;
+    }
+
+    inline bool refract(Vector3f *wt, const Vector3f &wi, const Vector3f &n, float index) {
+
+        float cosThetaI = clamp(n.dot(wi), -1.0f, 1.0f);
+
+        float n1 = AIR_INDEX;
+        float n2 = index;
+        Vector3f N = n;
+
+        bool entering = cosThetaI > 0.0f;
+        if (!entering) {
+            float temp = n1;
+            n1 = n2;
+            n2 = temp;
+            N = -N;
+//            cosThetaI = std::abs(cosThetaI);
+        } else {
+//            cosThetaI = -cosThetaI;
+        }
 
         float eta = n1 / n2;
-        float sinThetaI = 1 - cosThetaI * cosThetaI;
+        float sinThetaI = std::max(0.0f, 1 - cosThetaI * cosThetaI);
         float sinThetaT = eta * eta * sinThetaI;
 
-        if (sinThetaI >= 1.f) { return false; } // Total reflection
+        if (sinThetaT >= 1) { return false; } // Total reflection
 
-        float cosThetaT = sqrt(1 - sinThetaT);
+        float cosThetaT = std::sqrt(1 - sinThetaT);
 
-        *wt = eta * wi + n * (-eta * cosThetaI - cosThetaT);
+//        *wt = eta * wi + n * (-eta * cosThetaI - cosThetaT);
+        *wt = eta * -wi + (eta * cosThetaI - cosThetaT) * N;
 
         return true;
 
     }
 
     // Calculate Dielectric-Dielectric reflection coefficient
-    float fresnel(float cosThetaI, float index) {
-        bool inside = cosThetaI > 0;
-        float n1 = inside ? index : AIR_INDEX;
-        float n2 = inside ? AIR_INDEX : index;
+    inline float fresnel(float cosThetaI, float index) {
+        cosThetaI = clamp(cosThetaI, -1.0f, 1.0f);
+        float n1 = AIR_INDEX;
+        float n2 = index;
+
+        bool entering = cosThetaI > 0.0f;
+        if (!entering) {
+            float temp = n1;
+            n1 = n2;
+            n2 = temp;
+            cosThetaI = std::abs(cosThetaI);
+        }
 
         float sinThetaI = std::sqrt(std::max(0.0f, 1 - cosThetaI * cosThetaI));
         float sinThetaT = n1 / n2 * sinThetaI;
@@ -65,23 +97,13 @@ namespace rays {
 
     }
 
-    inline float absDot(const Vector3f &v0, const Vector3f &v1) {
-        return std::abs(v0.dot(v1));
-    }
 
-    inline float cosTheta(const Vector3f& v) {
-        return v.z;
-    }
 
-    inline float absCosTheta(const Vector3f& v) {
-        return std::abs(v.z);
-    }
-
-    Vector3f worldToLocal(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
+    inline Vector3f worldToLocal(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
         return Vector3f(v.dot(ss), v.dot(ts), v.dot(ns));
     }
 
-    Vector3f localToWorld(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
+    inline Vector3f localToWorld(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
         return Vector3f(ss.x * v.x + ts.x * v.y + ns.x * v.z,
                         ss.y * v.x + ts.y * v.y + ns.y * v.z,
                         ss.z * v.x + ts.z * v.y + ns.z * v.z);
@@ -91,15 +113,17 @@ namespace rays {
     struct BSDF {
         explicit BSDF(const ColorDbl &c, float index) : R(c), index(index) {}
 
+        virtual ~BSDF() = default;
+
         virtual ColorDbl fr(Vector3f *wi, const Vector3f &wo) const = 0;
 
-        virtual ColorDbl ft(Vector3f *wi, const Vector3f &wo) const = 0;
+//        virtual ColorDbl ft(Vector3f *wi, const Vector3f &wo) const = 0;
 
         virtual float pdf(const Vector3f &wi, const Vector3f &wo) const {
             return cosTheta(wi) * invPI; // pdf for Lambertian and Oren-Nayar
         }
 
-        virtual inline BSDF_Type getType() const = 0;
+        virtual BSDF_Type getType() const = 0;
 
         const ColorDbl R;
         const float index;
@@ -107,7 +131,8 @@ namespace rays {
 
     struct Lambertian final : BSDF {
 
-        explicit Lambertian(const ColorDbl &c, float index) : BSDF(c, index) {}
+        explicit Lambertian(const ColorDbl &c, float index = 1) : BSDF(c, index) {}
+        virtual ~Lambertian() = default;
 
         ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
             return R * invPI;
@@ -120,10 +145,12 @@ namespace rays {
     };
 
     struct Glass final : BSDF {
-        explicit Glass(const ColorDbl &c, float index, const float index1) : BSDF(c, index) {}
+        explicit Glass(const ColorDbl &c, float index) : BSDF(c, index) {}
+        virtual ~Glass() = default;
 
         ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
-            return ColorDbl(0, 0, 0);
+//            *wi = Vector3f(-wo.x, -wo.y, wo.z);
+            return R;
         }
 
         BSDF_Type getType() const override {

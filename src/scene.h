@@ -14,8 +14,8 @@ namespace rays {
 
     public:
 
-        explicit Scene(const std::vector<std::shared_ptr<SceneObject>> &s,
-                       const std::vector<std::shared_ptr<AreaLight>> &l)
+        explicit Scene(std::vector<std::shared_ptr<SceneObject>> s,
+                       std::vector<std::shared_ptr<AreaLight>> l)
                 : objects{std::move(s)}, lights{std::move(l)} {}
 
         bool intersect(Ray &ray, IntersectionInfo *isect) const;

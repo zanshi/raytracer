@@ -13,7 +13,8 @@ namespace rays {
     // Reasoning for a Vertex and a Vector class taken from PBRT
 
     template<typename T>
-    struct Vertex3 {
+    class Vertex3 {
+    public:
 
         Vertex3() = default;
 

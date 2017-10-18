@@ -157,9 +157,15 @@ namespace rays {
         Vector3f n = normalize(isect.n);
 
         // Local coordinate system base vectors
-        Vector3f ss = woWorld - (woWorld.dot(n)) * n;
-//        Vector3f ts = n.cross(ss);
-        Vector3f ts = ss.cross(n);
+//        Vector3f ss = woWorld - (woWorld.dot(n)) * n;
+
+        Vector3f ss, ts;
+        coordinateSystem(n, &ss, &ts);
+
+//        Vector3f ss = normalize(woWorld - (woWorld.dot(n)) * n);
+////        Vector3f ss = normalize(Vector3f(-n.y, n.x, 0));
+//        Vector3f ts = normalize(ss.cross(n));
+//        Vector3f ts = ss.cross(n);
 
         // Transform wo to local
         Vector3f wo = worldToLocal(ss, ts, n, woWorld);
@@ -210,9 +216,8 @@ namespace rays {
 
                         if (shadowIsect.shape == l->T.get()) {
                             // No occlusion! Add contribution from this ray
-                            Vector3f wiTemp;
-//                            Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
-//                            wi = normalize(wi);
+                            Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
+                            wi = normalize(wi);
 
                             Vector3f shadowN = normalize(shadowIsect.n);
 //                            Vector3f shadowSs = shadowIsect.wo - (shadowIsect.wo.dot(shadowN)) * shadowN;
@@ -220,7 +225,7 @@ namespace rays {
 
 //                            Vector3f shadowWoLocal = worldToLocal(shadowSs, shadowTs, shadowN, shadowIsect.wo);
 //                            shadowWoLocal = normalize(shadowWoLocal);
-                            ColorDbl f = isect.brdf->fr(&wiTemp, wo);
+                            ColorDbl f = isect.brdf->fr(&wi, wo);
                             // Calculate geometric term (not 100% sure about this one)
                             float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
                                       distanceSquared(q, isect.p);
@@ -240,50 +245,45 @@ namespace rays {
 
             float theta = std::acos(std::sqrt(rng.getUniform1D()));
             Vector3f wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
+            wi = normalize(wi);
             Vector3f wiWorld = normalize(localToWorld(ss, ts, n, wi));
 
-            Ray newRay(isect.p + n * epsilon * sgn(n.dot(wiWorld)), wiWorld);
+            Ray newRay(isect.p + n * epsilon, wiWorld);
             ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
 
-            L += (reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wi, wo) * P);
+//            L += (M_PI * reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wiWorld, n) * P);
+            L += (M_PI * reflection * isect.brdf->fr(&wi, wo)) / P;
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays
             // Don't really need a brdf here, just need to send the rays and
             // calculate the importance contribution
 
-//            Vector3f R = reflect(wo, n);
-            Vector3f RWorld = reflect(woWorld, n);
-//            Vector3f R = Vector3f(-wo.x, -wo.y, wo.z);
-//            Vector3f RWorld = localToWorld(ss, ts, n, R);
-            Vector3f R = worldToLocal(ss, ts, n, RWorld);
-            RWorld = normalize(RWorld);
-//            Vector3f R = normalize(Vector3f(-wo.x, -wo.y, wo.z));
+            Vector3f I = ray.d;
+            Vector3f RWorld = normalize(reflect(I, n));
             Vector3f T;
 
             // ---------------------
             // Reflection
-            float fresnelReflectionCoefficient = fresnel(RWorld.dot(n), isect.brdf->index);
-//            std::cout << fresnelReflectionCoefficient << ", " << cosTheta(R) << std::endl;
-//            Vector3f RWorld = localToWorld(ss, ts, n, R);
-//            RWorld = normalize(RWorld);
-//            std::cout << isect.n.dot(RWorld) << std::endl;
-            Ray reflected(isect.p + n * epsilon * sgn(n.dot(RWorld)), RWorld);
+            float fresnelReflectionCoefficient = fresnel(I.dot(n), isect.brdf->index);
+
+            bool outside = I.dot(n) < 0;
+            Vector3f bias = epsilon * n;
+
+            Vertex3f reflectionRayOrig = outside ? isect.p + bias : isect.p - bias;
+            Ray reflected(reflectionRayOrig, RWorld);
             ColorDbl traced = trace(reflected, scene, rng, depth + 1, beta);
-            ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced * absDot(RWorld, n);
+            ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced;
             L += rColor;
 
             // ---------------------
             // Refraction
-            if (refract(&T, woWorld, n, isect.brdf->index)) {
-//                Vector3f TWorld = normalize(localToWorld(ss, ts, n, T));
+            if (refract(&T, I, n, isect.brdf->index)) {
                 Vector3f TWorld = normalize(T);
-//                std::cout << TWorld.dot(n) << std::endl;
-                Ray refracted(isect.p + n * epsilon * sgn(n.dot(TWorld)), TWorld);
-
+                Vertex3f refractionRayOrig = outside ? isect.p - bias : isect.p + bias;
+                Ray refracted(refractionRayOrig, TWorld);
                 ColorDbl TColor = trace(refracted, scene, rng, depth + 1, beta);
-                L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor *
-                     absDot(TWorld, n);
+                L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor;
             }
         }
 

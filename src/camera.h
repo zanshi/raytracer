@@ -44,7 +44,7 @@ namespace rays {
         unsigned int eyeIdx{0};
         const unsigned int nSamples = 64;
         const float dx{0.002};
-        const int maxDepth = 5;
+        const int maxDepth = 6;
         const float P = 0.75;
 
     };

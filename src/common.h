@@ -21,10 +21,10 @@ namespace rays {
 
     // Global forward declarations (reduces compilation times)
     template<typename T>
-    struct Vector3;
+    class Vector3;
 
     template<typename T>
-    struct Vertex3;
+    class Vertex3;
 
     class Camera;
     class Scene;
@@ -45,11 +45,12 @@ namespace rays {
     struct Material;
     struct BSDF;
     struct Lambertian;
+    struct OrenNayar;
     struct Glass;
 
     class Light;
     class PointLight;
-//    class AreaLight;
+    class AreaLight;
 
 //    constexpr const float M_PI = 3.14159265359f;
     constexpr const float invPI = 1.0f / M_PI;

@@ -24,4 +24,8 @@ namespace rays {
 
     }
 
+    const AreaLight *SceneObject::getAreaLight() const {
+            return areaLight.get();
+    }
+
 }

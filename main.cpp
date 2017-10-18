@@ -129,8 +129,8 @@ std::vector<std::shared_ptr<SceneObject>> createWorld() {
     const std::shared_ptr<BSDF> surface_magenta = std::make_shared<Lambertian>(magenta);
     const std::shared_ptr<BSDF> surface_cyan = std::make_shared<Lambertian>(cyan);
 
-    auto areaLight1 = std::make_shared<AreaLight>(AreaLight(white, t18));
-    auto areaLight2 = std::make_shared<AreaLight>(AreaLight(white, t19));
+    auto areaLight1 = std::make_shared<AreaLight>(AreaLight(white * 3, t8));
+    auto areaLight2 = std::make_shared<AreaLight>(AreaLight(white, t9));
     auto areaLight3 = std::make_shared<AreaLight>(AreaLight(white * 3, t3));
     auto areaLight4 = std::make_shared<AreaLight>(AreaLight(white * 5, t7));
 
@@ -146,7 +146,7 @@ std::vector<std::shared_ptr<SceneObject>> createWorld() {
     objects.emplace_back(std::make_shared<SceneObject>(t6, surface_white));
     objects.emplace_back(std::make_shared<SceneObject>(t7, surface_white));
 
-    objects.emplace_back(std::make_shared<SceneObject>(t8, surface_lightred));
+    objects.emplace_back(std::make_shared<SceneObject>(t8, surface_lightred, areaLight1));
     objects.emplace_back(std::make_shared<SceneObject>(t9, surface_lightred));
 
     objects.emplace_back(std::make_shared<SceneObject>(t10, surface_lightgreen));
@@ -161,8 +161,8 @@ std::vector<std::shared_ptr<SceneObject>> createWorld() {
     objects.emplace_back(std::make_shared<SceneObject>(t16, surface_magenta));
     objects.emplace_back(std::make_shared<SceneObject>(t17, surface_magenta));
 
-    objects.emplace_back(std::make_shared<SceneObject>(t18, surface_cyan, areaLight1));
-    objects.emplace_back(std::make_shared<SceneObject>(t19, surface_cyan, areaLight2));
+    objects.emplace_back(std::make_shared<SceneObject>(t18, surface_cyan));
+    objects.emplace_back(std::make_shared<SceneObject>(t19, surface_cyan));
 
     return objects;
 }
@@ -175,9 +175,12 @@ Scene setupScene() {
 //    const std::shared_ptr<BSDF> glass = std::make_shared<Glass>(Glass({1, 1, 1}, 1.52f));
     ColorDbl red {0.8, 0.1, 0.1};
     ColorDbl white {1,1,1};
-    const std::shared_ptr<BSDF> sphere_material = std::make_shared<Glass>(Glass(white, 1.52));
-    auto sphere = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({3.5f, 1, 2}, 2.5f)), sphere_material);
+    const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(Glass(white, 1.52f));
+    const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(OrenNayar(red, 0.3f));
+    auto sphere = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, 2.2f, 2}, 2.0f)), glass_material);
+    auto sphere2 = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, -2.2f, 2}, 2.0f)), diffuse_material);
     world.push_back(sphere);
+    world.push_back(sphere2);
 
     // Create a point light
     std::vector<std::shared_ptr<AreaLight>> lights;
@@ -197,7 +200,7 @@ Camera setupCamera() {
     eyes[0] = Vertex3f(-2.0f, 0.f, 0.f);
     eyes[1] = Vertex3f(-0.5f, 0.f, 0.f);
 
-    return Camera(eyes, 128, 128, 1, 64);
+    return Camera(eyes, 256, 256, 1, 64);
 }
 
 int main() {

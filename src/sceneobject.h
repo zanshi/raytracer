@@ -20,9 +20,7 @@ namespace rays {
 
         bool intersect(Ray &ray, IntersectionInfo *isect) const;
 
-        const AreaLight* getAreaLight() const {
-            return areaLight.get();
-        }
+        const AreaLight* getAreaLight() const;
 
         const std::shared_ptr<Shape> shape;
         const std::shared_ptr<BSDF> bsdf;

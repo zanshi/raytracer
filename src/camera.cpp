@@ -27,7 +27,8 @@ namespace rays {
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
 
-#pragma omp parallel for default(none) shared(plane, scene) schedule(dynamic, 16)
+        RNG rng{};
+#pragma omp parallel for default(none) shared(plane, scene) private(rng) schedule(dynamic, 16)
         for (unsigned int i = 0; i < plane.size(); i++) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
                 ColorDbl L{0, 0, 0};
@@ -41,7 +42,7 @@ namespace rays {
                     // Create eye -> camera plane ray
                     auto ray = Ray(eyes[eyeIdx], direction);
 
-                    RNG rng;
+
                     ColorDbl beta{1, 1, 1};
                     L += trace(ray, scene, rng, 0, beta);
                 }
@@ -237,8 +238,10 @@ namespace rays {
             }
 
             // Reflect in random direction
-            float phi = ((2.f * M_PI) / P) * rng.getUniform1D();
+            float r1 = rng.getUniform1D();
+            float phi = ((2.f * M_PI) / P) * r1;
             // Russian roulette
+//            std::cout << r1 << std::endl;
             if (phi > 2.f * M_PI) {
                 return L;
             }
@@ -249,10 +252,10 @@ namespace rays {
             Vector3f wiWorld = normalize(localToWorld(ss, ts, n, wi));
 
             Ray newRay(isect.p + n * epsilon, wiWorld);
-            ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
+//            ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
 
 //            L += (M_PI * reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wiWorld, n) * P);
-            L += (M_PI * reflection * isect.brdf->fr(&wi, wo)) / P;
+            L += (M_PI * trace(newRay, scene, rng, depth + 1, beta) * isect.brdf->fr(&wi, wo)) / P;
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays

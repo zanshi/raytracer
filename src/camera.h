@@ -34,6 +34,7 @@ namespace rays {
         ColorDbl trace(Ray &ray, const Scene &scene, RNG &rng, int depth, ColorDbl &beta) const;
 
         void adjustLevels();
+
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
         double getMaxPixelColorVal() const;
@@ -44,7 +45,7 @@ namespace rays {
         unsigned int eyeIdx{0};
         const unsigned int nSamples = 64;
         const float dx{0.002};
-        const int maxDepth = 6;
+        const int maxDepth = 5;
         const float P = 0.75;
 
     };

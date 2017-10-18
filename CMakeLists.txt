@@ -13,11 +13,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra 
 #SET(CMAKE_CXX_COMPILER /usr/local/bin/g++-7)
 
 FIND_PACKAGE(OpenMP REQUIRED)
-if(OPENMP_FOUND)
+if (OPENMP_FOUND)
     message("OPENMP FOUND")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
+endif ()
 
 set(SOURCES
         src/camera.cpp
@@ -51,12 +51,16 @@ set(ALL_LIBS
         raytracer
         )
 
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+SET(BUILD_SHARED_LIBRARIES OFF)
+SET(CMAKE_EXE_LINKER_FLAGS "-static")
+
 add_executable(raytracer_exe main.cpp)
 
-SET_TARGET_PROPERTIES ( raytracer_exe PROPERTIES OUTPUT_NAME raytracer )
-TARGET_LINK_LIBRARIES ( raytracer_exe ${ALL_LIBS} )
+SET_TARGET_PROPERTIES(raytracer_exe PROPERTIES OUTPUT_NAME raytracer)
+TARGET_LINK_LIBRARIES(raytracer_exe ${ALL_LIBS})
 
-INSTALL ( TARGETS
+INSTALL(TARGETS
         raytracer_exe
         DESTINATION
         bin

@@ -22,7 +22,6 @@ Vector3f calculateNormal(Vertex3f p0, Vertex3f p1, Vertex3f p2) {
 }
 
 
-
 std::vector<std::shared_ptr<SceneObject>> createWorld() {
 
     // Define vertices
@@ -173,12 +172,14 @@ Scene setupScene() {
     std::vector<std::shared_ptr<SceneObject>> world = createWorld();
     // Add a sphere
 //    const std::shared_ptr<BSDF> glass = std::make_shared<Glass>(Glass({1, 1, 1}, 1.52f));
-    ColorDbl red {0.8, 0.1, 0.1};
-    ColorDbl white {1,1,1};
+    ColorDbl red{0.8, 0.1, 0.1};
+    ColorDbl white{1, 1, 1};
     const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(Glass(white, 1.52f));
     const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(OrenNayar(red, 0.3f));
-    auto sphere = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, 2.2f, 2}, 2.0f)), glass_material);
-    auto sphere2 = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, -2.2f, 2}, 2.0f)), diffuse_material);
+    auto sphere = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, 2.2f, 2}, 2.0f)),
+                                                glass_material);
+    auto sphere2 = std::make_shared<SceneObject>(std::make_shared<Sphere>(Sphere({4.0f, -2.2f, 2}, 2.0f)),
+                                                 diffuse_material);
     world.push_back(sphere);
     world.push_back(sphere2);
 
@@ -200,7 +201,7 @@ Camera setupCamera() {
     eyes[0] = Vertex3f(-2.0f, 0.f, 0.f);
     eyes[1] = Vertex3f(-0.5f, 0.f, 0.f);
 
-    return Camera(eyes, 256, 256, 1, 64);
+    return Camera(eyes, 256, 256, 1, 2048);
 }
 
 int main() {

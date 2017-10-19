@@ -149,8 +149,6 @@ namespace rays {
 
         virtual ColorDbl fr(Vector3f *wi, const Vector3f &wo) const = 0;
 
-//        virtual ColorDbl ft(Vector3f *wi, const Vector3f &wo) const = 0;
-
         virtual float pdf(const Vector3f &wi, const Vector3f &n) const {
             return absDot(wi, n) * invPI; // pdf for Lambertian and Oren-Nayar
         }
@@ -165,7 +163,7 @@ namespace rays {
 
         explicit Lambertian(const ColorDbl &c, float index = 1) : BSDF(c, index) {}
 
-        virtual ~Lambertian() = default;
+        ~Lambertian() override = default;
 
         ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
             return R * invPI;
@@ -183,7 +181,7 @@ namespace rays {
                 BSDF(c, index), A(1 - ((0.5f * sigma * sigma) / (sigma * sigma + 0.33f))),
                 B(0.45f * (sigma * sigma) / (sigma * sigma + 0.09f)) {}
 
-        virtual ~OrenNayar() = default;
+        ~OrenNayar() override = default;
 
         ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
             float sinThetaI = SinTheta(*wi);
@@ -220,7 +218,7 @@ namespace rays {
     struct Glass final : BSDF {
         explicit Glass(const ColorDbl &c, float index) : BSDF(c, index) {}
 
-        virtual ~Glass() = default;
+        ~Glass() override = default;
 
         ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
 //            *wi = Vector3f(-wo.x, -wo.y, wo.z);

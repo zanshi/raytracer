@@ -33,8 +33,6 @@ namespace rays {
 
         ColorDbl trace(Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const;
 
-        void adjustLevels();
-
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
         double getMaxPixelColorVal() const;
@@ -42,7 +40,7 @@ namespace rays {
         const std::vector<Vertex3f> eyes;
         CameraPlane plane;
 
-        unsigned int eyeIdx{0};
+        const unsigned int eyeIdx{0};
         const unsigned int nSamples = 64;
         const float dx{0.002};
         const int maxDepth = 5;

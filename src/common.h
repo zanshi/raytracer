@@ -42,19 +42,20 @@ namespace rays {
     struct Pixel;
     struct ColorDbl;
 
-    struct Material;
     struct BSDF;
     struct Lambertian;
     struct OrenNayar;
     struct Glass;
 
     class Light;
-    class PointLight;
     class AreaLight;
 
-//    constexpr const float M_PI = 3.14159265359f;
-    constexpr const float invPI = 1.0f / M_PI;
 
+    // Useful constants
+    constexpr const float PI = 3.14159265359f;
+    constexpr const float invPI = 1.0f / PI;
+
+    // Utility functions
     template<typename T>
     inline float clamp(const T &v, const T &lo, const T &hi) { return std::max(lo, std::min(hi, v)); }
 

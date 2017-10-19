@@ -6,7 +6,7 @@
 #define RAYTRACER_VECTOR_H
 
 #include <cassert>
-#include <math.h>
+#include <cmath>
 #include "common.h"
 #include "vertex.h"
 

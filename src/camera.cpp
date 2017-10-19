@@ -5,15 +5,7 @@
 #include "camera.h"
 #include "scene.h"
 #include "ray.h"
-#include "vertex.h"
-#include "vector.h"
 #include "intersectioninfo.h"
-#include "rng.h"
-#include "bsdf.h"
-#include "area_light.h"
-#include "colordbl.h"
-
-#include <omp.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
@@ -28,7 +20,7 @@ namespace rays {
         const float offset = 1.0f - 1.0f / plane.size();
 
         RNG rng{};
-#pragma omp parallel for default(none) shared(plane, scene) private(rng) schedule(dynamic, 16)
+#pragma omp parallel for default(none) shared(plane, scene) private(rng) schedule(dynamic, 32)
         for (unsigned int i = 0; i < plane.size(); i++) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
                 ColorDbl L{0, 0, 0};
@@ -56,47 +48,29 @@ namespace rays {
 
         std::vector<unsigned char> outImg(width * height * 3);
 
-//        adjustLevels();
         double maxVal = getMaxPixelColorVal();
-        std::cout << maxVal << std::endl;
+        std::cout << "Highest pixel value = " << maxVal << std::endl;
 
         for (unsigned int i = 0; i < plane.size(); i++) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
                 auto ldr = toneMap(plane[i][j].color, maxVal);
-//                std::cout << static_cast<int>(ldr[0]) << ' '
-//                          << static_cast<int>(ldr[1]) << ' '
-//                          << static_cast<int>(ldr[2]) << std::endl;
                 outImg[3 * (width * j + i) + 0] = ldr[0];
                 outImg[3 * (width * j + i) + 1] = ldr[1];
                 outImg[3 * (width * j + i) + 2] = ldr[2];
             }
         }
 
-        if (stbi_write_png(filename.data(), width, height, 3, outImg.data(), width * 3)) {
+        if (stbi_write_png(filename.data(), static_cast<int>(width), static_cast<int>(height), 3, outImg.data(),
+                           static_cast<int>(width * 3))) {
             std::cout << "Output written to out.png" << std::endl;
         } else {
             std::cerr << "Failed to write file!" << std::endl;
         }
     }
 
-    void Camera::adjustLevels() {
-        for (unsigned int i = 0; i < plane.size(); i++) {
-            for (unsigned int j = 0; j < plane[0].size(); j++) {
-                plane[i][j].color.r = std::sqrt(plane[i][j].color.r);
-                plane[i][j].color.g = std::sqrt(plane[i][j].color.g);
-                plane[i][j].color.b = std::sqrt(plane[i][j].color.b);
-            }
-        }
-    }
-
     ColorChar Camera::toneMap(ColorDbl c, double iMax) const {
-        // Basic version
-        ColorChar rgb = {0, 0, 0};
-//        c = gammaCorrect(c);
+        ColorChar rgb{0, 0, 0};
         c = clamp(c, 0.0, 1.0);
-//        rgb[0] = static_cast<unsigned char>(clamp(c.r * (255.99 / iMax), 0.0, 255.0));
-//        rgb[1] = static_cast<unsigned char>(clamp(c.g * (255.99 / iMax), 0.0, 255.0));
-//        rgb[2] = static_cast<unsigned char>(clamp(c.b * (255.99 / iMax), 0.0, 255.0));
         rgb[0] = static_cast<unsigned char>(c.r * 255);
         rgb[1] = static_cast<unsigned char>(c.g * 255);
         rgb[2] = static_cast<unsigned char>(c.b * 255);
@@ -106,11 +80,9 @@ namespace rays {
 
     double Camera::getMaxPixelColorVal() const {
         double maxVal = std::numeric_limits<double>::min();
-        for (unsigned int i = 0; i < plane.size(); i++) {
+        for (const auto &i : plane) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
-                maxVal = std::max(plane[i][j].color.r, maxVal);
-                maxVal = std::max(plane[i][j].color.g, maxVal);
-                maxVal = std::max(plane[i][j].color.b, maxVal);
+                maxVal = i[j].color.maxColorVal(maxVal);
             }
         }
 
@@ -126,7 +98,7 @@ namespace rays {
             return L;
         }
 
-        // 1. Check intersection
+        // Check intersection
         IntersectionInfo isect;
         bool intersected = scene.intersect(ray, &isect);
 
@@ -135,47 +107,24 @@ namespace rays {
             return L;
         }
 
-        // Check the intersection surface
-        // Different behaviour depending on surface type
-        // Walls: Lambertian
-        // Objects:
-        // 1 Lambertian
-        // 1 Oren-Nayar
-        // 1 Transparent (Sphere)
+        Vector3f woWorld = isect.wo; // Should be normalized
+        Vector3f n = isect.n; // Should be normalized
 
-        // Reflected ray direction
-        // wi = wo - 2 * (wo * N) * N
-        Vector3f woWorld = isect.wo;
-
-//        if (woWorld.x == 0 && woWorld.y == 0 && woWorld.z == 0) {
-//            std::cout << woWorld << std::endl;
-//            std::cout << isect.p << std::endl;
-//        }
-
-        Vector3f n = normalize(isect.n);
-
-        // Local coordinate system base vectors
-//        Vector3f ss = woWorld - (woWorld.dot(n)) * n;
-
+        // Create local coordinate system
         Vector3f ss, ts;
         coordinateSystem(n, &ss, &ts);
 
-//        Vector3f ss = normalize(woWorld - (woWorld.dot(n)) * n);
-////        Vector3f ss = normalize(Vector3f(-n.y, n.x, 0));
-//        Vector3f ts = normalize(ss.cross(n));
-//        Vector3f ts = ss.cross(n);
-
         // Transform wo to local
-        Vector3f wo = worldToLocal(ss, ts, n, woWorld);
-        wo = normalize(wo);
+        Vector3f wo = normalize(worldToLocal(ss, ts, n, woWorld));
 
         // From here on, the calculations are in the local coordinate system of the
         // current hemisphere
 
-        // Intersected object is a light source. Add contribution from light and terminate.
+        // Intersected object is an area light source.
+        // Add contribution from light and terminate.
+        // We only care about the first bounce and specular reflections
         if (auto l = isect.obj->getAreaLight()) {
             if (depth == 0 || specularBounce) {
-//            std::cout << isect.obj->getAreaLight()->L0 << std::endl;
                 L += l->L0 * l->intensity;
             }
             return L;
@@ -183,6 +132,8 @@ namespace rays {
 
         const float epsilon = 1e-5f;
 
+        // Check the intersection surface
+        // Different behaviour depending on surface type
         if (isect.brdf->getType() == BSDF_DIFFUSE) {
             // Monte-Carlo: Use pdf and rng to calculate the reflected ray
 
@@ -204,42 +155,34 @@ namespace rays {
 
             const int M = 10; // TODO move this
             for (const auto &l : scene.lights) {
-                if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
+//                if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
                 ColorDbl Ld{0, 0, 0};
                 for (unsigned int i = 0; i < M; i++) {
                     Vertex3f q = l->T->getRandomPoint(rng); // random point on the triangle
                     Vector3f wiWorld = normalize(q - isect.p);
                     IntersectionInfo shadowIsect;
                     Ray shadowRay(isect.p + n * epsilon, wiWorld);
-                    if (scene.intersect(shadowRay, &shadowIsect)) {
-                        if (shadowIsect.shape == l->T.get()) {
-                            // No occlusion! Add contribution from this ray
-                            Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
-                            wi = normalize(wi);
+                    if (scene.intersect(shadowRay, &shadowIsect) && shadowIsect.shape == l->T.get()) {
+                        // No occlusion! Add contribution from this ray
+                        Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
+                        wi = normalize(wi);
+                        Vector3f shadowN = normalize(shadowIsect.n);
+                        ColorDbl f = isect.brdf->fr(&wi, wo);
 
-                            Vector3f shadowN = normalize(shadowIsect.n);
-//                            Vector3f shadowSs = shadowIsect.wo - (shadowIsect.wo.dot(shadowN)) * shadowN;
-//                            Vector3f shadowTs = shadowSs.cross(shadowN);
-
-//                            Vector3f shadowWoLocal = worldToLocal(shadowSs, shadowTs, shadowN, shadowIsect.wo);
-//                            shadowWoLocal = normalize(shadowWoLocal);
-                            ColorDbl f = isect.brdf->fr(&wi, wo);
-                            // Calculate geometric term (not 100% sure about this one)
-                            float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
-                                      distanceSquared(q, isect.p);
-                            Ld += f * G;
-                        }
+                        // Calculate geometric term
+                        // TODO Check if this is valid for spheres (probably not)
+                        float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
+                                  distanceSquared(q, isect.p);
+                        Ld += f * G;
                     }
                 }
                 L += (l->area * l->L0 * l->intensity * Ld) / M;
             }
 
             // Reflect in random direction
-            float r1 = rng.getUniform1D();
-            float phi = ((2.f * M_PI) / P) * r1;
+            float phi = ((2.f * PI) / P) * rng.getUniform1D();
             // Russian roulette
-//            std::cout << r1 << std::endl;
-            if (phi > 2.f * M_PI) {
+            if (phi > 2.f * PI) {
                 return L;
             }
 
@@ -249,10 +192,7 @@ namespace rays {
             Vector3f wiWorld = normalize(localToWorld(ss, ts, n, wi));
 
             Ray newRay(isect.p + n * epsilon, wiWorld);
-//            ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
-
-//            L += (M_PI * reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wiWorld, n) * P);
-            L += (M_PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) / P;
+            L += (PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) / P;
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays
@@ -272,8 +212,8 @@ namespace rays {
             Vector3f bias = epsilon * n;
 
             Vertex3f reflectionRayOrig = outside ? isect.p + bias : isect.p - bias;
-            Ray reflected(reflectionRayOrig, RWorld);
-            ColorDbl traced = trace(reflected, scene, rng, depth + 1, specularBounce);
+            Ray reflectionRay(reflectionRayOrig, RWorld);
+            ColorDbl traced = trace(reflectionRay, scene, rng, depth + 1, specularBounce);
             ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced;
             L += rColor;
 
@@ -282,8 +222,8 @@ namespace rays {
             if (refract(&T, I, n, isect.brdf->index)) {
                 Vector3f TWorld = normalize(T);
                 Vertex3f refractionRayOrig = outside ? isect.p - bias : isect.p + bias;
-                Ray refracted(refractionRayOrig, TWorld);
-                ColorDbl TColor = trace(refracted, scene, rng, depth + 1, specularBounce);
+                Ray refractedRay(refractionRayOrig, TWorld);
+                ColorDbl TColor = trace(refractedRay, scene, rng, depth + 1, specularBounce);
                 L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor;
             }
         }

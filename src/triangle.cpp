@@ -4,7 +4,6 @@
 
 #include "triangle.h"
 #include "ray.h"
-#include "vertex.h"
 #include "intersectioninfo.h"
 
 namespace rays {
@@ -48,8 +47,8 @@ namespace rays {
         double invDet = 1.0 / det;
         t *= invDet;
         if (t > ray.tMax || t <= epsilon) { return false; } // Bailout if intersection point is further away
-        u *= invDet;
-        v *= invDet;
+//        u *= invDet;
+//        v *= invDet;
 
         *tHit = t;
         Vertex3f end = ray.o + t * dir;

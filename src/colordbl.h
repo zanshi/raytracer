@@ -77,6 +77,13 @@ namespace rays {
             return ss.str();
         }
 
+        double maxColorVal(double maxVal) const {
+            maxVal = std::max(r, maxVal);
+            maxVal = std::max(g, maxVal);
+            maxVal = std::max(b, maxVal);
+            return maxVal;
+        }
+
     };
 
     inline ColorDbl gammaCorrect(const ColorDbl &c) {

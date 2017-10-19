@@ -15,15 +15,15 @@ namespace rays {
     class SceneObject {
     public:
         explicit SceneObject(const std::shared_ptr<Shape> &s, const std::shared_ptr<BSDF> &b,
-                    const std::shared_ptr<AreaLight> &l = nullptr)
+                             const std::shared_ptr<AreaLight> &l = nullptr)
                 : shape(s), bsdf(b), areaLight(l) {}
 
         bool intersect(Ray &ray, IntersectionInfo *isect) const;
 
-        const AreaLight* getAreaLight() const;
+        const AreaLight *getAreaLight() const;
 
-        const std::shared_ptr<Shape> shape;
-        const std::shared_ptr<BSDF> bsdf;
+        std::shared_ptr<Shape> shape;
+        std::shared_ptr<BSDF> bsdf;
         std::shared_ptr<AreaLight> areaLight{nullptr};
 
     };

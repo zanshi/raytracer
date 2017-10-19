@@ -8,6 +8,7 @@
 #include <cassert>
 #include <math.h>
 #include "common.h"
+#include "vertex.h"
 
 namespace rays {
 
@@ -109,6 +110,7 @@ namespace rays {
 
     };
 
+
     template<typename T>
     inline Vector3<T> faceforward(const Vector3<T> &v, const Vector3<T> &v2) {
         return (v.dot(v2) < 0.f) ? -v : v;
@@ -117,6 +119,13 @@ namespace rays {
     template<typename T>
     Vector3<T> normalize(const Vector3<T> &v) {
         return v / v.length();
+    }
+
+    template<typename T>
+    Vector3<T> calculateNormal(Vertex3 <T> p0, Vertex3 <T> p1, Vertex3 <T> p2) {
+        Vector3<T> v0 = p1 - p0;
+        Vector3<T> v1 = p2 - p0;
+        return normalize(v0.cross(v1));
     }
 
     template<typename T, typename U>

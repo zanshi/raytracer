@@ -15,12 +15,10 @@
 
 namespace rays {
 
-#define TEST_CULL true
-
     struct Triangle final : public Shape {
 
-        Triangle(std::shared_ptr<TriangleMesh> mesh, const std::array<unsigned int, 3> &indices,
-                 const Vector3f &normal) : mesh(std::move(mesh)), indices(indices), normal(normal) {}
+        Triangle(std::shared_ptr<TriangleMesh> mesh, const std::array<unsigned int, 3> &indices) : mesh(
+                std::move(mesh)), indices(indices), normal(calculateNormal(getV0(), getV1(), getV2())) {}
 
         ~Triangle() final = default;
 
@@ -30,9 +28,11 @@ namespace rays {
 
         float area() const override;
 
-        const Vertex3f& getV0() const;
-        const Vertex3f& getV1() const;
-        const Vertex3f& getV2() const;
+        const Vertex3f &getV0() const;
+
+        const Vertex3f &getV1() const;
+
+        const Vertex3f &getV2() const;
 
         std::shared_ptr<TriangleMesh> mesh;
         std::array<unsigned int, 3> indices;

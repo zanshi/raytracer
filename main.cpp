@@ -10,26 +10,8 @@
 
 using namespace rays;
 
-Vector3f calculateNormal(Vertex3f p0, Vertex3f p1, Vertex3f p2) {
-    Vector3f v0 = p1 - p0;
-    Vector3f v1 = p2 - p0;
-    return normalize(v0.cross(v1));
-}
 
 std::vector<std::shared_ptr<SceneObject>> createWorld() {
-
-    // Define vertices
-    // Define indices
-    // Create triangle mesh object from the vertices and indices
-    // return triangle mesh?
-    // or, return vector of triangles?
-
-    // mesh:
-    // consolidated
-    // well structured
-
-    // Floor
-    // Unique vertex list
 
     Vertex3f v0(-3.0, 0.0, -5.0);
     Vertex3f v1(0.0, -6.0, -5.0);
@@ -53,47 +35,35 @@ std::vector<std::shared_ptr<SceneObject>> createWorld() {
 
     // Connect everything
     // Floor
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 5}, {0, 0, 1}));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {1, 2, 5}, {0, 0, 1}));
-    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle(mesh, {2, 4, 5}, {0, 0, 1}));
-    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 4}, {0, 0, 1}));
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 5}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {1, 2, 5}));
+    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle(mesh, {2, 4, 5}));
+    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 4}));
 
     // Ceiling
-    const std::shared_ptr<Shape> t4 = std::make_shared<Triangle>(Triangle(mesh, {7, 6, 11}, {0, 0, -1}));
-    const std::shared_ptr<Shape> t5 = std::make_shared<Triangle>(Triangle(mesh, {7, 11, 8}, {0, 0, -1}));
-    const std::shared_ptr<Shape> t6 = std::make_shared<Triangle>(Triangle(mesh, {8, 11, 10}, {0, 0, -1}));
-    const std::shared_ptr<Shape> t7 = std::make_shared<Triangle>(Triangle(mesh, {8, 10, 9}, {0, 0, -1}));
+    const std::shared_ptr<Shape> t4 = std::make_shared<Triangle>(Triangle(mesh, {7, 6, 11}));
+    const std::shared_ptr<Shape> t5 = std::make_shared<Triangle>(Triangle(mesh, {7, 11, 8}));
+    const std::shared_ptr<Shape> t6 = std::make_shared<Triangle>(Triangle(mesh, {8, 11, 10}));
+    const std::shared_ptr<Shape> t7 = std::make_shared<Triangle>(Triangle(mesh, {8, 10, 9}));
 
-    const std::shared_ptr<Shape> t8 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 6, 1}, calculateNormal(v0, v6, v1)));
-    const std::shared_ptr<Shape> t9 = std::make_shared<Triangle>(
-            Triangle(mesh, {1, 6, 7}, calculateNormal(v1, v6, v7)));
-    const std::shared_ptr<Shape> t10 = std::make_shared<Triangle>(
-            Triangle(mesh, {1, 7, 2}, calculateNormal(v1, v7, v2)));
+    const std::shared_ptr<Shape> t8 = std::make_shared<Triangle>(Triangle(mesh, {0, 6, 1}));
+    const std::shared_ptr<Shape> t9 = std::make_shared<Triangle>(Triangle(mesh, {1, 6, 7}));
+    const std::shared_ptr<Shape> t10 = std::make_shared<Triangle>(Triangle(mesh, {1, 7, 2}));
 
     // -y wall
-    const std::shared_ptr<Shape> t11 = std::make_shared<Triangle>(
-            Triangle(mesh, {2, 7, 8}, calculateNormal(v2, v7, v8)));
-    const std::shared_ptr<Shape> t12 = std::make_shared<Triangle>(
-            Triangle(mesh, {2, 8, 3}, calculateNormal(v2, v8, v3)));
+    const std::shared_ptr<Shape> t11 = std::make_shared<Triangle>(Triangle(mesh, {2, 7, 8}));
+    const std::shared_ptr<Shape> t12 = std::make_shared<Triangle>(Triangle(mesh, {2, 8, 3}));
 
-    const std::shared_ptr<Shape> t13 = std::make_shared<Triangle>(
-            Triangle(mesh, {3, 8, 9}, calculateNormal(v3, v8, v9)));
-    const std::shared_ptr<Shape> t14 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 5, 11}, calculateNormal(v0, v5, v11)));
-    const std::shared_ptr<Shape> t15 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 11, 6}, calculateNormal(v0, v11, v6)));
+    const std::shared_ptr<Shape> t13 = std::make_shared<Triangle>(Triangle(mesh, {3, 8, 9}));
+    const std::shared_ptr<Shape> t14 = std::make_shared<Triangle>(Triangle(mesh, {0, 5, 11}));
+    const std::shared_ptr<Shape> t15 = std::make_shared<Triangle>(Triangle(mesh, {0, 11, 6}));
 
     // +y wall
-    const std::shared_ptr<Shape> t16 = std::make_shared<Triangle>(
-            Triangle(mesh, {5, 4, 10}, calculateNormal(v5, v4, v10)));
-    const std::shared_ptr<Shape> t17 = std::make_shared<Triangle>(
-            Triangle(mesh, {5, 10, 11}, calculateNormal(v5, v10, v11)));
+    const std::shared_ptr<Shape> t16 = std::make_shared<Triangle>(Triangle(mesh, {5, 4, 10}));
+    const std::shared_ptr<Shape> t17 = std::make_shared<Triangle>(Triangle(mesh, {5, 10, 11}));
 
-    const std::shared_ptr<Shape> t18 = std::make_shared<Triangle>(
-            Triangle(mesh, {4, 3, 9}, calculateNormal(v4, v3, v9)));
-    const std::shared_ptr<Shape> t19 = std::make_shared<Triangle>(
-            Triangle(mesh, {4, 9, 10}, calculateNormal(v4, v9, v10)));
+    const std::shared_ptr<Shape> t18 = std::make_shared<Triangle>(Triangle(mesh, {4, 3, 9}));
+    const std::shared_ptr<Shape> t19 = std::make_shared<Triangle>(Triangle(mesh, {4, 9, 10}));
 
     ColorDbl lightred{0.5, 0.0, 0.0};
     ColorDbl lightgreen{0.0, 0.5, 0.0};
@@ -159,14 +129,10 @@ auto createTetrahedron() {
 
     // Define triangles
     const auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 3, 1}, calculateNormal(v0, v3, v1)));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(
-            Triangle(mesh, {1, 3, 2}, calculateNormal(v1, v3, v2)));
-    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(
-            Triangle(mesh, {2, 3, 0}, calculateNormal(v2, v3, v0)));
-    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 1, 2}, calculateNormal(v0, v1, v2)));
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 3, 1}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {1, 3, 2}));
+    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 0}));
+    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 2}));
 
     // Define surface
     const ColorDbl red{0.8, 0.2, 0.2};
@@ -197,10 +163,8 @@ auto createAreaLights() {
     const auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
 
     Vector3f normal{0, 0, 1};
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(
-            Triangle(mesh, {0, 1, 2}, normal));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(
-            Triangle(mesh, {2, 3, 0}, normal));
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 2}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 0}));
 
     ColorDbl white{1.0, 1.0, 1.0};
     float intensity = 40;

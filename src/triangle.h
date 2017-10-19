@@ -19,14 +19,14 @@ namespace rays {
 
     struct Triangle final : public Shape {
 
-        Triangle(const std::shared_ptr<TriangleMesh> &mesh, const std::array<unsigned int, 3> &indices,
-                 const Vector3f &normal) : mesh(mesh), indices(indices), normal(normal) {}
+        Triangle(std::shared_ptr<TriangleMesh> mesh, const std::array<unsigned int, 3> &indices,
+                 const Vector3f &normal) : mesh(std::move(mesh)), indices(indices), normal(normal) {}
 
         ~Triangle() final = default;
 
         bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const override;
 
-        Vertex3f getRandomPoint(RNG &rng) const;
+        Vertex3f getRandomPoint(RNG &rng) const override;
 
         float area() const override;
 
@@ -36,7 +36,7 @@ namespace rays {
 
         std::shared_ptr<TriangleMesh> mesh;
         std::array<unsigned int, 3> indices;
-        Vector3f normal;
+        const Vector3f normal;
 
     };
 }

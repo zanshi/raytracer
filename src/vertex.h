@@ -80,7 +80,6 @@ namespace rays {
         }
 
 
-
     };
 
     template<typename T, typename U>
@@ -101,7 +100,7 @@ namespace rays {
 
 
     template<typename T>
-    inline std::ostream& operator<<(std::ostream& os, const Vertex3<T> & v) {
+    inline std::ostream &operator<<(std::ostream &os, const Vertex3<T> &v) {
         os << v.x << " " << v.y << " " << v.z;
         return os;
     }

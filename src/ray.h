@@ -19,10 +19,11 @@ namespace rays {
         // the end vertex is the start vertex for new rays -> ref/ptr
         // save 3 * 8 - 8 = 16 bytes
 
-        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d) {}
+        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d), tMax(std::numeric_limits<float>::max()) {}
 
         const Vertex3f o{0, 0, 0}; // origin
         Vector3f d;
+        float tMax;
     };
 }
 #endif //RAYTRACER_RAY_H

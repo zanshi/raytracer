@@ -46,10 +46,9 @@ namespace rays {
         }
 
 
-        if (t0 > *tHit) {
+        if (t0 > ray.tMax) {
             return false;
         }
-
 
 //        // No real solutions
 //
@@ -66,6 +65,8 @@ namespace rays {
 
         // and choose the one closest to the ray origin
         //ray.e = ray.o + std::min(d1, d2) * d;
+
+        *tHit = t0;
 
         Vertex3f end = ray.o + t0 * d;
 

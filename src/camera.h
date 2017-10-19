@@ -31,7 +31,7 @@ namespace rays {
 
     private:
 
-        ColorDbl trace(Ray &ray, const Scene &scene, RNG &rng, int depth, ColorDbl &beta) const;
+        ColorDbl trace(Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const;
 
         void adjustLevels();
 

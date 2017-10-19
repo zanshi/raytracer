@@ -24,7 +24,7 @@ namespace rays {
 
         const std::shared_ptr<Shape> shape;
         const std::shared_ptr<BSDF> bsdf;
-        std::shared_ptr<AreaLight> areaLight;
+        std::shared_ptr<AreaLight> areaLight{nullptr};
 
     };
 

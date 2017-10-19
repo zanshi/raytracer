@@ -107,11 +107,9 @@ namespace rays {
         }
 
 
-
-
     };
 
-    template <typename T>
+    template<typename T>
     inline Vector3<T> faceforward(const Vector3<T> &v, const Vector3<T> &v2) {
         return (v.dot(v2) < 0.f) ? -v : v;
     }
@@ -132,7 +130,7 @@ namespace rays {
     }
 
     template<typename T>
-    inline std::ostream& operator<<(std::ostream& os, const Vector3<T> & v) {
+    inline std::ostream &operator<<(std::ostream &os, const Vector3<T> &v) {
         os << v.x << " " << v.y << " " << v.z;
         return os;
     }

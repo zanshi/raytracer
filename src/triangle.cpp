@@ -24,8 +24,8 @@ namespace rays {
         // Use determinant to bail out early in case the triangle is facing away
         double det = e1.dot(P);
 
-//#ifdef TEST_CULL
-        if (det < std::numeric_limits<float>::epsilon()) {
+        const float epsilon = std::numeric_limits<float>::epsilon();
+        if (det < epsilon && det > -epsilon) {
             return false;
         }
         // Test bounds for u
@@ -45,17 +45,17 @@ namespace rays {
         // We have a match!
         // Calculate t
         float t = Q.dot(e2);
-        if (t > *tHit) { return false; } // Bailout if intersection point is further away
         double invDet = 1.0 / det;
         t *= invDet;
+        if (t > ray.tMax || t <= epsilon) { return false; } // Bailout if intersection point is further away
         u *= invDet;
         v *= invDet;
 
+        *tHit = t;
         Vertex3f end = ray.o + t * dir;
 
         *isect = IntersectionInfo(end, -ray.d, normal, this);
 
-//#endif
         return true;
     }
 
@@ -67,15 +67,15 @@ namespace rays {
     }
 
     const Vertex3f &Triangle::getV0() const {
-        return mesh->V->operator[](indices[0]);
+        return mesh->V[indices[0]];
     }
 
     const Vertex3f &Triangle::getV1() const {
-        return mesh->V->operator[](indices[1]);
+        return mesh->V[indices[1]];
     }
 
     const Vertex3f &Triangle::getV2() const {
-        return mesh->V->operator[](indices[2]);
+        return mesh->V[indices[2]];
     }
 
     Vertex3f Triangle::getRandomPoint(RNG &rng) const {

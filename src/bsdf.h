@@ -20,9 +20,9 @@ namespace rays {
     const float AIR_INDEX = 1.0f;
 
 
-    template <typename T>
-    inline void coordinateSystem(const Vector3<T> &v1, Vector3<T> *v2,
-                                 Vector3<T> *v3) {
+    template<typename T>
+    inline void coordinateSystem(const Vector3 <T> &v1, Vector3 <T> *v2,
+                                 Vector3 <T> *v3) {
         if (std::abs(v1.x) > std::abs(v1.y))
             *v2 = Vector3<T>(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
         else
@@ -37,6 +37,7 @@ namespace rays {
     inline float cosTheta(const Vector3f &v) {
         return v.z;
     }
+
     inline float Cos2Theta(const Vector3f &w) { return w.z * w.z; }
 
 
@@ -45,7 +46,7 @@ namespace rays {
     }
 
     inline float Sin2Theta(const Vector3f &w) {
-        return std::max((float)0, (float)1 - Cos2Theta(w));
+        return std::max((float) 0, (float) 1 - Cos2Theta(w));
     }
 
     inline float SinTheta(const Vector3f &w) { return std::sqrt(Sin2Theta(w)); }
@@ -193,7 +194,7 @@ namespace rays {
                 float sinPhiI = SinPhi(*wi), cosPhiI = CosPhi(*wi);
                 float sinPhiO = SinPhi(wo), cosPhiO = CosPhi(wo);
                 float dCos = cosPhiI * cosPhiO + sinPhiI * sinPhiO;
-                maxCos = std::max((float)0, dCos);
+                maxCos = std::max((float) 0, dCos);
             }
 
             // Compute sine and tangent terms of Oren-Nayar model

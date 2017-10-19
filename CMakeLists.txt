@@ -9,9 +9,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -O3 -march=native -mtune=native")
 
 
-#SET(CMAKE_C_COMPILER /usr/local/bin/gcc-7)
-#SET(CMAKE_CXX_COMPILER /usr/local/bin/g++-7)
-
 FIND_PACKAGE(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     message("OPENMP FOUND")
@@ -50,10 +47,6 @@ add_library(raytracer
 set(ALL_LIBS
         raytracer
         )
-
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-SET(BUILD_SHARED_LIBRARIES OFF)
-SET(CMAKE_EXE_LINKER_FLAGS "-static")
 
 add_executable(raytracer_exe main.cpp)
 

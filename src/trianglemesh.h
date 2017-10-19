@@ -12,15 +12,15 @@ namespace rays {
 
     struct TriangleMesh {
 
-        explicit TriangleMesh(std::unique_ptr<std::vector<Vertex3f>> vertices) : V(std::move(vertices)) {}
+        explicit TriangleMesh(std::vector<Vertex3f> vertices) : V(std::move(vertices)) {}
 
-        TriangleMesh(std::unique_ptr<std::vector<Vertex3f>> vertices, std::unique_ptr<std::vector<int>> indices)
-                : V(std::move(vertices)), I(std::move(indices)) {
+//        TriangleMesh(std::unique_ptr<std::vector<Vertex3f>> vertices, std::unique_ptr<std::vector<int>> indices)
+//                : V(std::move(vertices)), I(std::move(indices)) {
+//
+//        }
 
-        }
-
-        std::unique_ptr<std::vector<Vertex3f>> V;
-        std::unique_ptr<std::vector<int>> I;
+        std::vector<Vertex3f> V;
+        std::vector<int> I;
         // color vector?
 
     };

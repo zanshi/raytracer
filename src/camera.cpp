@@ -41,10 +41,7 @@ namespace rays {
 
                     // Create eye -> camera plane ray
                     auto ray = Ray(eyes[eyeIdx], direction);
-
-
-                    ColorDbl beta{1, 1, 1};
-                    L += trace(ray, scene, rng, 0, beta);
+                    L += trace(ray, scene, rng, 0, false);
                 }
 
                 plane[i][j].color = L / nSamples;
@@ -120,7 +117,7 @@ namespace rays {
         return maxVal;
     }
 
-    ColorDbl Camera::trace(Ray &ray, const Scene &scene, RNG &rng, int depth, ColorDbl &beta) const {
+    ColorDbl Camera::trace(Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const {
 
         ColorDbl L{0.0, 0.0, 0.0};
 
@@ -176,10 +173,11 @@ namespace rays {
         // current hemisphere
 
         // Intersected object is a light source. Add contribution from light and terminate.
-        if (isect.obj->getAreaLight() != nullptr) {
-//            if (depth == 0) {
-            L += isect.obj->getAreaLight()->L0;
-//            }
+        if (auto l = isect.obj->getAreaLight()) {
+            if (depth == 0 || specularBounce) {
+//            std::cout << isect.obj->getAreaLight()->L0 << std::endl;
+                L += l->L0 * l->intensity;
+            }
             return L;
         }
 
@@ -201,20 +199,19 @@ namespace rays {
             // Calculate V(x, q_i) and G(x, q_i)
             // Sum (fr * V * G)
 
-            const int M = 10; // TODO move this
+            specularBounce = false;
 
+
+            const int M = 10; // TODO move this
             for (const auto &l : scene.lights) {
                 if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
                 ColorDbl Ld{0, 0, 0};
-                float pdf = 1.f / l->area;
                 for (unsigned int i = 0; i < M; i++) {
                     Vertex3f q = l->T->getRandomPoint(rng); // random point on the triangle
                     Vector3f wiWorld = normalize(q - isect.p);
                     IntersectionInfo shadowIsect;
                     Ray shadowRay(isect.p + n * epsilon, wiWorld);
-                    float tHit = std::numeric_limits<float>::max();
-                    if (l->T->intersect(shadowRay, &shadowIsect, &tHit)) {
-
+                    if (scene.intersect(shadowRay, &shadowIsect)) {
                         if (shadowIsect.shape == l->T.get()) {
                             // No occlusion! Add contribution from this ray
                             Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
@@ -234,7 +231,7 @@ namespace rays {
                         }
                     }
                 }
-                L += (l->area * l->L0 * Ld) / M;
+                L += (l->area * l->L0 * l->intensity * Ld) / M;
             }
 
             // Reflect in random direction
@@ -255,13 +252,14 @@ namespace rays {
 //            ColorDbl reflection = trace(newRay, scene, rng, depth + 1, beta);
 
 //            L += (M_PI * reflection * isect.brdf->fr(&wi, wo) * absDot(wiWorld, n)) / (isect.brdf->pdf(wiWorld, n) * P);
-            L += (M_PI * trace(newRay, scene, rng, depth + 1, beta) * isect.brdf->fr(&wi, wo)) / P;
+            L += (M_PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) / P;
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays
             // Don't really need a brdf here, just need to send the rays and
             // calculate the importance contribution
 
+            specularBounce = true;
             Vector3f I = ray.d;
             Vector3f RWorld = normalize(reflect(I, n));
             Vector3f T;
@@ -275,7 +273,7 @@ namespace rays {
 
             Vertex3f reflectionRayOrig = outside ? isect.p + bias : isect.p - bias;
             Ray reflected(reflectionRayOrig, RWorld);
-            ColorDbl traced = trace(reflected, scene, rng, depth + 1, beta);
+            ColorDbl traced = trace(reflected, scene, rng, depth + 1, specularBounce);
             ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced;
             L += rColor;
 
@@ -285,7 +283,7 @@ namespace rays {
                 Vector3f TWorld = normalize(T);
                 Vertex3f refractionRayOrig = outside ? isect.p - bias : isect.p + bias;
                 Ray refracted(refractionRayOrig, TWorld);
-                ColorDbl TColor = trace(refracted, scene, rng, depth + 1, beta);
+                ColorDbl TColor = trace(refracted, scene, rng, depth + 1, specularBounce);
                 L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor;
             }
         }

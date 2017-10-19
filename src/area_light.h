@@ -14,9 +14,10 @@
 namespace rays {
     class AreaLight : public Light {
     public:
-        explicit AreaLight(const ColorDbl &c, const std::shared_ptr<Shape> &shape)
-                : Light(c), T(shape), area(shape->area()) {}
-        virtual ~AreaLight() = default;
+        explicit AreaLight(const ColorDbl &c, const std::shared_ptr<Shape> &shape, float i)
+                : Light(c, i), T(shape), area(shape->area()) {}
+
+        ~AreaLight() override = default;
 
         const std::shared_ptr<Shape> T;
         const float area{};

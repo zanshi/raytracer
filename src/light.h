@@ -13,12 +13,13 @@ namespace rays {
     class Light {
 
     protected:
-        explicit Light(ColorDbl c) : L0(c) {}
+        explicit Light(ColorDbl c, float i) : L0(c), intensity(i) {}
 
     public:
         virtual ~Light() = default;
         // We use point lights -> only need position
         ColorDbl L0;
+        float intensity;
     };
 }
 

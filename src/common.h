@@ -17,15 +17,11 @@
 #include <cmath>
 #include <random>
 
+#include <glm/fwd.hpp>
+
 namespace rays {
 
     // Global forward declarations (reduces compilation times)
-    template<typename T>
-    class Vector3;
-
-    template<typename T>
-    class Vertex3;
-
     class Camera;
     class Scene;
     class RNG;
@@ -63,6 +59,11 @@ namespace rays {
     inline int sgn(T val) {
         return (T(0) < val) - (val < T(0));
     }
+
+
+
+
+
 
 } // namespace rays
 

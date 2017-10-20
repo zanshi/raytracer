@@ -6,6 +6,7 @@
 #define RAYTRACER_TRIANGLE_H
 
 #include <utility>
+#include <xmmintrin.h>
 
 #include "common.h"
 #include "direction.h"
@@ -18,7 +19,8 @@ namespace rays {
     struct Triangle final : public Shape {
 
         Triangle(std::shared_ptr<TriangleMesh> mesh, const std::array<unsigned int, 3> &indices) : mesh(
-                std::move(mesh)), indices(indices), normal(calculateNormal(getV0(), getV1(), getV2())) {}
+                std::move(mesh)), indices(indices), normal(glm::normalize(
+                glm::cross(getV2() - getV0(), getV1() - getV0()))) {}
 
         ~Triangle() final = default;
 

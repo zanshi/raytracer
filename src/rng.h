@@ -14,7 +14,8 @@ namespace rays {
     class RNG {
 
     public:
-        RNG() : gen{std::chrono::high_resolution_clock::now().time_since_epoch().count()}, dis{0, 1} {}
+        RNG() : gen{
+                static_cast<unsigned long long int>(std::chrono::high_resolution_clock::now().time_since_epoch().count())}, dis{0, 1} {}
 
         float getUniform1D() { return dis(gen); }
 

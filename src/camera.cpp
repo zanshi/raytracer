@@ -6,6 +6,7 @@
 #include "scene.h"
 #include "ray.h"
 #include "intersectioninfo.h"
+#include <glm/gtx/norm.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
@@ -19,10 +20,12 @@ namespace rays {
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
 
+		CameraPlane tempPlane = plane;
+
         RNG rng{};
-#pragma omp parallel for default(none) shared(plane, scene) private(rng) schedule(dynamic, 32)
-        for (unsigned int i = 0; i < plane.size(); i++) {
-            for (unsigned int j = 0; j < plane[0].size(); j++) {
+#pragma omp parallel for default(none) shared(tempPlane, scene) private(rng) schedule(dynamic, 16)
+        for (int i = 0; i < plane.size(); i++) {
+            for (int j = 0; j < plane[0].size(); j++) {
                 ColorDbl L{0, 0, 0};
                 Vector3f direction;
 
@@ -36,9 +39,11 @@ namespace rays {
                     L += trace(ray, scene, rng, 0, false);
                 }
 
-                plane[i][j].color = L / nSamples;
+                tempPlane[i][j].color = L / nSamples;
             }
         }
+
+		plane = tempPlane;
     }
 
     void Camera::createImage(const std::string &filename) {
@@ -172,7 +177,7 @@ namespace rays {
                         // Calculate geometric term
                         // TODO Check if this is valid for spheres (probably not)
                         float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
-                                  distanceSquared(q, isect.p);
+                                  distance2(q, isect.p);
                         Ld += f * G;
                     }
                 }
@@ -206,9 +211,9 @@ namespace rays {
 
             // ---------------------
             // Reflection
-            float fresnelReflectionCoefficient = fresnel(I.dot(n), isect.brdf->index);
+            float fresnelReflectionCoefficient = fresnel(dot(I,n), isect.brdf->index);
 
-            bool outside = I.dot(n) < 0;
+            bool outside = dot(I,n) < 0;
             Vector3f bias = epsilon * n;
 
             Vertex3f reflectionRayOrig = outside ? isect.p + bias : isect.p - bias;

@@ -14,9 +14,9 @@ namespace rays {
 
         const Vector3f d = ray.d;
         const Vector3f L = ray.o - center;
-        const float a = d.dot(d);
-        const float b = 2.0f * (d.dot(L));
-        const float c = L.dot(L) - (r * r);
+        const float a = dot(d, d);
+        const float b = 2.0f * (dot(d,L));
+        const float c = dot(L, L) - (r * r);
 
 //        const float discrim = std::pow((b / 2.0f), 2) - a * c;
         const auto discrim = b * b - 4 * a * c;
@@ -80,6 +80,6 @@ namespace rays {
     }
 
     float Sphere::area() const {
-        return static_cast<float>(4.0f * M_PI * r * r);
+        return static_cast<float>(4.0f * PI * r * r);
     }
 }

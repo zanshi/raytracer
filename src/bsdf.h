@@ -19,19 +19,17 @@ namespace rays {
 
     const float AIR_INDEX = 1.0f;
 
-
-    template<typename T>
-    inline void coordinateSystem(const Vector3 <T> &v1, Vector3 <T> *v2,
-                                 Vector3 <T> *v3) {
+    inline void coordinateSystem(const Vector3f &v1, Vector3f *v2,
+                                 Vector3f *v3) {
         if (std::abs(v1.x) > std::abs(v1.y))
-            *v2 = Vector3<T>(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
+            *v2 = Vector3f(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
         else
-            *v2 = Vector3<T>(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
-        *v3 = v1.cross(*v2);
+            *v2 = Vector3f(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
+        *v3 = cross(v1,*v2);
     }
 
     inline float absDot(const Vector3f &v0, const Vector3f &v1) {
-        return std::abs(v0.dot(v1));
+        return std::abs(dot(v0, v1));
     }
 
     inline float cosTheta(const Vector3f &v) {
@@ -72,12 +70,12 @@ namespace rays {
     inline float Sin2Phi(const Vector3f &w) { return SinPhi(w) * SinPhi(w); }
 
     inline Vector3f reflect(const Vector3f &wo, const Vector3f &n) {
-        return wo - 2 * n.dot(wo) * n;
+        return wo - 2 * dot(n,wo) * n;
     }
 
     inline bool refract(Vector3f *wt, const Vector3f &wi, const Vector3f &n, float index) {
 
-        float cosThetaI = clamp(n.dot(wi), -1.0f, 1.0f);
+        float cosThetaI = clamp(dot(n,wi), -1.0f, 1.0f);
 
         float n1 = AIR_INDEX;
         float n2 = index;
@@ -132,7 +130,7 @@ namespace rays {
 
 
     inline Vector3f worldToLocal(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
-        return Vector3f(v.dot(ss), v.dot(ts), v.dot(ns));
+        return Vector3f(dot(v,ss), dot(v,ts), dot(v,ns));
     }
 
     inline Vector3f localToWorld(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {

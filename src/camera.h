@@ -6,8 +6,6 @@
 #define RAYTRACER_CAMERA_H
 
 #include "common.h"
-#include "vertex.h"
-#include "pixel.h"
 #include "rng.h"
 
 
@@ -19,7 +17,7 @@ namespace rays {
         using CameraPlane = std::vector<std::vector<ColorDbl>>;
     public:
 
-        explicit Camera(std::vector<Vertex3f> eyes, unsigned int x, unsigned int y, unsigned int currEyeIdx,
+        explicit Camera(std::vector<glm::vec3> eyes, unsigned int x, unsigned int y, unsigned int currEyeIdx,
                         unsigned int nSamples)
                 : eyes(std::move(eyes)),
                   plane(x, std::vector<ColorDbl>(y)),
@@ -37,13 +35,13 @@ namespace rays {
 
         double getMaxPixelColorVal() const;
 
-        const std::vector<Vertex3f> eyes;
+        const std::vector<glm::vec3> eyes;
         CameraPlane plane;
 
         const unsigned int eyeIdx{0};
         const unsigned int nSamples = 64;
         const float dx{0.002f};
-        const int maxDepth = 10;
+        const int maxDepth = 7;
 
     };
 

@@ -13,57 +13,52 @@ using namespace rays;
 
 std::vector<SceneObject> createWorld() {
 
-    Vertex3f v0(-3.0, 0.0, -5.0);
-    Vertex3f v1(0.0, -6.0, -5.0);
-    Vertex3f v2(10.0, -6.0, -5.0);
-    Vertex3f v3(13.0, 0.0, -5.0);
-    Vertex3f v4(10.0, 6.0, -5.0);
-    Vertex3f v5(0.0, 6.0, -5.0);
+    glm::vec3 v0(-3.0, 0.0, -5.0);
+    glm::vec3 v1(0.0, -6.0, -5.0);
+    glm::vec3 v2(10.0, -6.0, -5.0);
+    glm::vec3 v3(13.0, 0.0, -5.0);
+    glm::vec3 v4(10.0, 6.0, -5.0);
+    glm::vec3 v5(0.0, 6.0, -5.0);
 
     // Ceiling
-    Vertex3f v6(-3.0, 0.0, 5.0);
-    Vertex3f v7(0.0, -6.0, 5.0);
-    Vertex3f v8(10.0, -6.0, 5.0);
-    Vertex3f v9(13.0, 0.0, 5.0);
-    Vertex3f v10(10.0, 6.0, 5.0);
-    Vertex3f v11(0.0, 6.0, 5.0);
-
-    std::vector<Vertex3f> vertices{v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11};
-
-    // Transfer ownership of vertices to the triangle mesh
-    auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
+    glm::vec3 v6(-3.0, 0.0, 5.0);
+    glm::vec3 v7(0.0, -6.0, 5.0);
+    glm::vec3 v8(10.0, -6.0, 5.0);
+    glm::vec3 v9(13.0, 0.0, 5.0);
+    glm::vec3 v10(10.0, 6.0, 5.0);
+    glm::vec3 v11(0.0, 6.0, 5.0);
 
     // Connect everything
     // Floor
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 5}));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {1, 2, 5}));
-    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle(mesh, {2, 4, 5}));
-    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 4}));
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v5}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v1, v2, v5}));
+    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle({v2, v4, v5}));
+    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle({v2, v3, v4}));
 
     // Ceiling
-    const std::shared_ptr<Shape> t4 = std::make_shared<Triangle>(Triangle(mesh, {7, 6, 11}));
-    const std::shared_ptr<Shape> t5 = std::make_shared<Triangle>(Triangle(mesh, {7, 11, 8}));
-    const std::shared_ptr<Shape> t6 = std::make_shared<Triangle>(Triangle(mesh, {8, 11, 10}));
-    const std::shared_ptr<Shape> t7 = std::make_shared<Triangle>(Triangle(mesh, {8, 10, 9}));
+    const std::shared_ptr<Shape> t4 = std::make_shared<Triangle>(Triangle({v7, v6, v11}));
+    const std::shared_ptr<Shape> t5 = std::make_shared<Triangle>(Triangle({v7, v11, v8}));
+    const std::shared_ptr<Shape> t6 = std::make_shared<Triangle>(Triangle({v8, v11, v10}));
+    const std::shared_ptr<Shape> t7 = std::make_shared<Triangle>(Triangle({v8, v10, v9}));
 
-    const std::shared_ptr<Shape> t8 = std::make_shared<Triangle>(Triangle(mesh, {0, 6, 1}));
-    const std::shared_ptr<Shape> t9 = std::make_shared<Triangle>(Triangle(mesh, {1, 6, 7}));
-    const std::shared_ptr<Shape> t10 = std::make_shared<Triangle>(Triangle(mesh, {1, 7, 2}));
+    const std::shared_ptr<Shape> t8 = std::make_shared<Triangle>(Triangle({v0, v6, v1}));
+    const std::shared_ptr<Shape> t9 = std::make_shared<Triangle>(Triangle({v1, v6, v7}));
+    const std::shared_ptr<Shape> t10 = std::make_shared<Triangle>(Triangle({v1, v7, v2}));
 
     // -y wall
-    const std::shared_ptr<Shape> t11 = std::make_shared<Triangle>(Triangle(mesh, {2, 7, 8}));
-    const std::shared_ptr<Shape> t12 = std::make_shared<Triangle>(Triangle(mesh, {2, 8, 3}));
+    const std::shared_ptr<Shape> t11 = std::make_shared<Triangle>(Triangle({v2, v7, v8}));
+    const std::shared_ptr<Shape> t12 = std::make_shared<Triangle>(Triangle({v2, v8, v3}));
 
-    const std::shared_ptr<Shape> t13 = std::make_shared<Triangle>(Triangle(mesh, {3, 8, 9}));
-    const std::shared_ptr<Shape> t14 = std::make_shared<Triangle>(Triangle(mesh, {0, 5, 11}));
-    const std::shared_ptr<Shape> t15 = std::make_shared<Triangle>(Triangle(mesh, {0, 11, 6}));
+    const std::shared_ptr<Shape> t13 = std::make_shared<Triangle>(Triangle({v3, v8, v9}));
+    const std::shared_ptr<Shape> t14 = std::make_shared<Triangle>(Triangle({v0, v5, v11}));
+    const std::shared_ptr<Shape> t15 = std::make_shared<Triangle>(Triangle({v0, v11, v6}));
 
     // +y wall
-    const std::shared_ptr<Shape> t16 = std::make_shared<Triangle>(Triangle(mesh, {5, 4, 10}));
-    const std::shared_ptr<Shape> t17 = std::make_shared<Triangle>(Triangle(mesh, {5, 10, 11}));
+    const std::shared_ptr<Shape> t16 = std::make_shared<Triangle>(Triangle({v5, v4, v10}));
+    const std::shared_ptr<Shape> t17 = std::make_shared<Triangle>(Triangle({v5, v10, v11}));
 
-    const std::shared_ptr<Shape> t18 = std::make_shared<Triangle>(Triangle(mesh, {4, 3, 9}));
-    const std::shared_ptr<Shape> t19 = std::make_shared<Triangle>(Triangle(mesh, {4, 9, 10}));
+    const std::shared_ptr<Shape> t18 = std::make_shared<Triangle>(Triangle({v4, v3, v9}));
+    const std::shared_ptr<Shape> t19 = std::make_shared<Triangle>(Triangle({v4, v9, v10}));
 
     ColorDbl lightred{0.5, 0.0, 0.0};
     ColorDbl lightgreen{0.0, 0.5, 0.0};
@@ -120,19 +115,16 @@ auto createTetrahedron() {
     std::vector<SceneObject> tetrahedron;
 
     // Define vertices
-    Vertex3f v0{6.0f, 4.8f, -4.0f};
-    Vertex3f v1{6.0f, -4.8f, -4.0f};
-    Vertex3f v2{4.8f, -2.0f, -2.0f};
-    Vertex3f v3{5.5f, -1.0f, 0.0f};
-
-    std::vector<Vertex3f> vertices{v0, v1, v2, v3};
+    glm::vec3 v0{6.0f, 4.8f, -4.0f};
+    glm::vec3 v1{6.0f, -4.8f, -4.0f};
+    glm::vec3 v2{4.8f, -2.0f, -2.0f};
+    glm::vec3 v3{5.5f, -1.0f, 0.0f};
 
     // Define triangles
-    const auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 3, 1}));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {1, 3, 2}));
-    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 0}));
-    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 2}));
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v3, v1}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v1, v3, v2}));
+    const std::shared_ptr<Shape> t2 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
+    const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
 
     // Define surface
     const ColorDbl red{0.8, 0.2, 0.2};
@@ -154,20 +146,17 @@ auto createAreaLights() {
 
     std::vector<SceneObject> lightTriangles;
 
-    Vertex3f v0{4.0f, 1.5f, 4.99f};
-    Vertex3f v1{5.5f, 1.5f, 4.99f};
-    Vertex3f v2{5.5f, -1.5f, 4.99f};
-    Vertex3f v3{4.0f, -1.5f, 4.99f};
-    std::vector<Vertex3f> vertices{v0, v1, v2, v3};
+    glm::vec3 v0{4.0f, 1.5f, 4.99f};
+    glm::vec3 v1{5.5f, 1.5f, 4.99f};
+    glm::vec3 v2{5.5f, -1.5f, 4.99f};
+    glm::vec3 v3{4.0f, -1.5f, 4.99f};
 
-    const auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
-
-    Vector3f normal{0, 0, 1};
-    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle(mesh, {0, 1, 2}));
-    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 0}));
+    glm::vec3 normal{0, 0, 1};
+    const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
+    const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
 
     ColorDbl white{1.0, 1.0, 1.0};
-    float intensity = 16;
+    float intensity = 2;
 
     const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(white);
 
@@ -223,11 +212,11 @@ Scene setupScene() {
 
 Camera setupCamera() {
     // Create camera "eyes"
-    std::vector<Vertex3f> eyes(2);
-    eyes[0] = Vertex3f(-2.0f, 0.f, 0.f);
-    eyes[1] = Vertex3f(-0.5f, 0.f, 0.f);
+    std::vector<glm::vec3> eyes(2);
+    eyes[0] = glm::vec3(-2.0f, 0.f, 0.f);
+    eyes[1] = glm::vec3(-0.5f, 0.f, 0.f);
 
-    return Camera(eyes, 512, 512, 1, 16);
+    return Camera(eyes, 256, 256, 1, 16);
 }
 
 int main() {

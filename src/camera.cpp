@@ -34,7 +34,7 @@ namespace rays {
                 for (unsigned int k = 0; k < nSamples; k++) {
 
                     // Determine position on camera plane
-                    direction = normalize(glm::vec3{0, i * dx - offset, offset - j * dx} - eyes[eyeIdx]);
+                    direction = glm::normalize(glm::vec3{0, i * dx - offset, offset - j * dx} - eyes[eyeIdx]);
 
                     // Create eye -> camera plane ray
                     const Ray ray(eyes[eyeIdx], direction);
@@ -126,7 +126,7 @@ namespace rays {
         coordinateSystem(n, &ss, &ts);
 
         // Transform wo to local
-        glm::vec3 wo = normalize(worldToLocal(ss, ts, n, woWorld));
+        glm::vec3 wo = glm::normalize(worldToLocal(ss, ts, n, woWorld));
 
         // From here on, the calculations are in the local coordinate system of the
         // current hemisphere
@@ -179,7 +179,7 @@ namespace rays {
                         // No occlusion! Add contribution from this ray
                         glm::vec3 wi = worldToLocal(ss, ts, n, wiWorld);
                         wi = normalize(wi);
-                        glm::vec3 shadowN = normalize(shadowIsect.n);
+                        glm::vec3 shadowN = glm::normalize(shadowIsect.n);
                         ColorDbl f = isect.brdf->fr(&wi, wo);
 
                         // Calculate geometric term
@@ -221,9 +221,9 @@ namespace rays {
 
             // ---------------------
             // Reflection
-            float fresnelReflectionCoefficient = fresnel(dot(I,n), index);
+            float fresnelReflectionCoefficient = fresnel(glm::dot(I,n), index);
 
-            bool outside = dot(I,n) < 0;
+            bool outside = glm::dot(I,n) < 0;
             glm::vec3 bias = epsilon * n;
 
             glm::vec3 reflectionRayOrig = outside ? hitPoint + bias : hitPoint - bias;

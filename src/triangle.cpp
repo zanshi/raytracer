@@ -12,11 +12,10 @@ namespace rays {
 //		if (glm::dot(ray.d, normal) > 0) { return false; }
         // Möller-Trumbore
         // Based on the canonical implementation
-        const auto &v0 = getV0();
-        const auto &v1 = getV1();
-        const auto &v2 = getV2();
-//        const auto &d = ray.d;
 
+        glm::vec3 v0 = V[0];
+        glm::vec3 v1 = V[1];
+        glm::vec3 v2 = V[2];
 
 
         glm::vec3 p0t = v0 - ray.o;
@@ -96,22 +95,7 @@ namespace rays {
     }
 
     float Triangle::area() const {
-        const auto &v0 = getV0();
-        const auto &v1 = getV1();
-        const auto &v2 = getV2();
-        return 0.5f * (cross((v1 - v0), (v2 - v0))).length();
-    }
-
-    const glm::vec3 &Triangle::getV0() const {
-        return mesh->V[indices[0]];
-    }
-
-    const glm::vec3 &Triangle::getV1() const {
-        return mesh->V[indices[1]];
-    }
-
-    const glm::vec3 &Triangle::getV2() const {
-        return mesh->V[indices[2]];
+        return 0.5f * (glm::cross((V[1] - V[0]), (V[2] - V[0]))).length();
     }
 
     glm::vec3 Triangle::getRandomPoint(RNG &rng) const {
@@ -121,7 +105,7 @@ namespace rays {
             v = rng.getUniform1D();
         } while (u + v >= 1);
 
-        return (1 - u - v) * getV0() + u * getV1() + v * getV2();
+        return (1 - u - v) * V[0] + u * V[1] + v * V[2];
     }
 
 

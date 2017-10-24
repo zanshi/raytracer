@@ -12,8 +12,8 @@ namespace rays {
 
         float t0, t1;
 
-        const Vector3f d = ray.d;
-        const Vector3f L = ray.o - center;
+        const glm::vec3 d = ray.d;
+        const glm::vec3 L = ray.o - center;
         const float a = dot(d, d);
         const float b = 2.0f * (dot(d,L));
         const float c = dot(L, L) - (r * r);
@@ -68,15 +68,15 @@ namespace rays {
 
         *tHit = t0;
 
-        Vertex3f end = ray.o + t0 * d;
+        glm::vec3 end = ray.o + t0 * d;
 
-        *isect = IntersectionInfo(end, -ray.d, normalize(end - center), this);
+        *isect = IntersectionInfo(end, -ray.d, glm::normalize(end - center), this);
 
         return true;
     }
 
-    Vertex3f Sphere::getRandomPoint(RNG &rng) const {
-        return Vertex3f(); // not necessary
+    glm::vec3 Sphere::getRandomPoint(RNG &rng) const {
+        return glm::vec3(); // not necessary
     }
 
     float Sphere::area() const {

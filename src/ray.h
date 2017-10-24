@@ -7,7 +7,6 @@
 
 #include "common.h"
 #include "vector.h"
-#include "vertex.h"
 
 namespace rays {
     struct Ray {
@@ -17,10 +16,10 @@ namespace rays {
         // the end vertex is the start vertex for new rays -> ref/ptr
         // save 3 * 8 - 8 = 16 bytes
 
-        explicit Ray(const Vertex3f &o, const Vector3f &d) : o(o), d(d), tMax(std::numeric_limits<float>::max()) {}
+        explicit Ray(const glm::vec3 &o, const glm::vec3 &d) : o(o), d(d), tMax(std::numeric_limits<float>::max()) {}
 
-        const Vertex3f o{0, 0, 0}; // origin
-        const Vector3f d;
+        const glm::vec3 o{0, 0, 0}; // origin
+        const glm::vec3 d;
         mutable float tMax;
     };
 }

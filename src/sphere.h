@@ -7,12 +7,11 @@
 
 #include "common.h"
 #include "shape.h"
-#include "vertex.h"
 
 namespace rays {
     struct Sphere final : public Shape {
 
-        Sphere(const Vertex3f &center, const float r) : center(center), r(r) {}
+        Sphere(const glm::vec3 &center, const float r) : center(center), r(r) {}
 
         ~Sphere() final = default;
 
@@ -20,9 +19,9 @@ namespace rays {
 
         float area() const override;
 
-        Vertex3f getRandomPoint(RNG &rng) const override;
+        glm::vec3 getRandomPoint(RNG &rng) const override;
 
-        const Vertex3f center;
+        const glm::vec3 center;
         const float r{1.f};
 
     };

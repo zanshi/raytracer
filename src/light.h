@@ -6,7 +6,6 @@
 #define RAYTRACER_LIGHT_H
 
 #include "common.h"
-#include "vertex.h"
 #include "colordbl.h"
 
 namespace rays {

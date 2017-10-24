@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -O2")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -O3")
 
 
 FIND_PACKAGE(OpenMP REQUIRED)
@@ -27,8 +27,6 @@ set(HEADERS
         src/camera.h
         src/scene.h
         src/ray.h
-        src/pixel.h
-        src/vertex.h
         src/triangle.h
         src/colordbl.h
         src/trianglemesh.h
@@ -46,6 +44,12 @@ add_library(raytracer
 set(ALL_LIBS
         raytracer
         )
+
+if (MINGW)
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    SET(BUILD_SHARED_LIBRARIES OFF)
+    SET(CMAKE_EXE_LINKER_FLAGS "-static")
+endif()
 
 add_executable(raytracer_exe main.cpp)
 

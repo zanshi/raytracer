@@ -19,67 +19,67 @@ namespace rays {
 
     const float AIR_INDEX = 1.0f;
 
-    inline void coordinateSystem(const Vector3f &v1, Vector3f *v2,
-                                 Vector3f *v3) {
+    inline void coordinateSystem(const glm::vec3 &v1, glm::vec3 *v2,
+                                 glm::vec3 *v3) {
         if (std::abs(v1.x) > std::abs(v1.y))
-            *v2 = Vector3f(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
+            *v2 = glm::vec3(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
         else
-            *v2 = Vector3f(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
+            *v2 = glm::vec3(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
         *v3 = cross(v1,*v2);
     }
 
-    inline float absDot(const Vector3f &v0, const Vector3f &v1) {
+    inline float absDot(const glm::vec3 &v0, const glm::vec3 &v1) {
         return std::abs(dot(v0, v1));
     }
 
-    inline float cosTheta(const Vector3f &v) {
+    inline float cosTheta(const glm::vec3 &v) {
         return v.z;
     }
 
-    inline float Cos2Theta(const Vector3f &w) { return w.z * w.z; }
+    inline float Cos2Theta(const glm::vec3 &w) { return w.z * w.z; }
 
 
-    inline float absCosTheta(const Vector3f &v) {
+    inline float absCosTheta(const glm::vec3 &v) {
         return std::abs(v.z);
     }
 
-    inline float Sin2Theta(const Vector3f &w) {
+    inline float Sin2Theta(const glm::vec3 &w) {
         return std::max((float) 0, (float) 1 - Cos2Theta(w));
     }
 
-    inline float SinTheta(const Vector3f &w) { return std::sqrt(Sin2Theta(w)); }
+    inline float SinTheta(const glm::vec3 &w) { return std::sqrt(Sin2Theta(w)); }
 
-    inline float TanTheta(const Vector3f &w) { return SinTheta(w) / cosTheta(w); }
+    inline float TanTheta(const glm::vec3 &w) { return SinTheta(w) / cosTheta(w); }
 
-    inline float Tan2Theta(const Vector3f &w) {
+    inline float Tan2Theta(const glm::vec3 &w) {
         return Sin2Theta(w) / Cos2Theta(w);
     }
 
-    inline float CosPhi(const Vector3f &w) {
+    inline float CosPhi(const glm::vec3 &w) {
         float sinTheta = SinTheta(w);
         return (sinTheta == 0) ? 1 : clamp(w.x / sinTheta, -1.f, 1.f);
     }
 
-    inline float SinPhi(const Vector3f &w) {
+    inline float SinPhi(const glm::vec3 &w) {
         float sinTheta = SinTheta(w);
         return (sinTheta == 0) ? 0 : clamp(w.y / sinTheta, -1.f, 1.f);
     }
 
-    inline float Cos2Phi(const Vector3f &w) { return CosPhi(w) * CosPhi(w); }
+    inline float Cos2Phi(const glm::vec3 &w) { return CosPhi(w) * CosPhi(w); }
 
-    inline float Sin2Phi(const Vector3f &w) { return SinPhi(w) * SinPhi(w); }
+    inline float Sin2Phi(const glm::vec3 &w) { return SinPhi(w) * SinPhi(w); }
 
-    inline Vector3f reflect(const Vector3f &wo, const Vector3f &n) {
-        return wo - 2 * dot(n,wo) * n;
+    inline glm::vec3 reflect(const glm::vec3 &wo, const glm::vec3 &n) {
+        return wo - 2 * glm::dot(n,wo) * n;
     }
 
-    inline bool refract(Vector3f *wt, const Vector3f &wi, const Vector3f &n, float index) {
+    inline bool refract(glm::vec3 *wt, const glm::vec3 &wi, const glm::vec3 &n, float index) {
 
         float cosThetaI = clamp(dot(n,wi), -1.0f, 1.0f);
 
         float n1 = AIR_INDEX;
         float n2 = index;
-        Vector3f N = n;
+        glm::vec3 N = n;
 
 //        bool entering = cosThetaI > 0.0f;
 //        if (!entering) {
@@ -129,12 +129,12 @@ namespace rays {
     }
 
 
-    inline Vector3f worldToLocal(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
-        return Vector3f(dot(v,ss), dot(v,ts), dot(v,ns));
+    inline glm::vec3 worldToLocal(const glm::vec3 &ss, const glm::vec3 &ts, const glm::vec3 &ns, const glm::vec3 &v) {
+        return glm::vec3(dot(v,ss), dot(v,ts), dot(v,ns));
     }
 
-    inline Vector3f localToWorld(const Vector3f &ss, const Vector3f &ts, const Vector3f &ns, const Vector3f &v) {
-        return Vector3f(ss.x * v.x + ts.x * v.y + ns.x * v.z,
+    inline glm::vec3 localToWorld(const glm::vec3 &ss, const glm::vec3 &ts, const glm::vec3 &ns, const glm::vec3 &v) {
+        return glm::vec3(ss.x * v.x + ts.x * v.y + ns.x * v.z,
                         ss.y * v.x + ts.y * v.y + ns.y * v.z,
                         ss.z * v.x + ts.z * v.y + ns.z * v.z);
     }
@@ -145,9 +145,9 @@ namespace rays {
 
         virtual ~BSDF() = default;
 
-        virtual ColorDbl fr(Vector3f *wi, const Vector3f &wo) const = 0;
+        virtual ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const = 0;
 
-        virtual float pdf(const Vector3f &wi, const Vector3f &n) const {
+        virtual float pdf(const glm::vec3 &wi, const glm::vec3 &n) const {
             return absDot(wi, n) * invPI; // pdf for Lambertian and Oren-Nayar
         }
 
@@ -163,7 +163,7 @@ namespace rays {
 
         ~Lambertian() override = default;
 
-        ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
+        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
             return R * invPI;
         }
 
@@ -181,7 +181,7 @@ namespace rays {
 
         ~OrenNayar() override = default;
 
-        ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
+        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
             float sinThetaI = SinTheta(*wi);
             float sinThetaO = SinTheta(wo);
             // Compute cosine term of Oren-Nayar model
@@ -218,8 +218,8 @@ namespace rays {
 
         ~Glass() override = default;
 
-        ColorDbl fr(Vector3f *wi, const Vector3f &wo) const override {
-//            *wi = Vector3f(-wo.x, -wo.y, wo.z);
+        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
+//            *wi = glm::vec3(-wo.x, -wo.y, wo.z);
             return R;
         }
 

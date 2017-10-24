@@ -5,7 +5,6 @@
 #ifndef RAYTRACER_RNG_H
 #define RAYTRACER_RNG_H
 
-#include <ctime>
 #include <chrono>
 #include "common.h"
 

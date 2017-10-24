@@ -14,9 +14,8 @@ namespace rays {
 
     struct Triangle final : public Shape {
 
-        Triangle(std::shared_ptr<TriangleMesh> mesh, const std::array<unsigned int, 3> &indices) : mesh(
-                std::move(mesh)), indices(indices), normal(glm::normalize(
-                glm::cross(getV1() - getV0(), getV2() - getV0()))) {}
+        explicit Triangle(std::array<glm::vec3, 3> verts) : V(verts),
+                                                   normal(glm::normalize(glm::cross(V[1] - V[0], V[2] - V[0]))) {}
 
         ~Triangle() final = default;
 
@@ -26,14 +25,7 @@ namespace rays {
 
         float area() const override;
 
-        const glm::vec3 &getV0() const;
-
-        const glm::vec3 &getV1() const;
-
-        const glm::vec3 &getV2() const;
-
-        const std::shared_ptr<TriangleMesh> mesh;
-        const std::array<unsigned int, 3> indices;
+        const std::array<glm::vec3, 3> V;
         const glm::vec3 normal;
 
     };

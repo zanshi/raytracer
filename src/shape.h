@@ -7,7 +7,6 @@
 
 #include "common.h"
 #include "colordbl.h"
-#include "vertex.h"
 
 namespace rays {
 
@@ -17,7 +16,7 @@ namespace rays {
 
         virtual bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;
 
-        virtual Vertex3f getRandomPoint(RNG &rng) const = 0;
+        virtual glm::vec3 getRandomPoint(RNG &rng) const = 0;
 
         virtual float area() const = 0;
 

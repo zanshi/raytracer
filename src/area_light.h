@@ -12,7 +12,7 @@
 #include "shape.h"
 
 namespace rays {
-    class AreaLight : public Light {
+    class AreaLight final : public Light {
     public:
         explicit AreaLight(const ColorDbl &c, const std::shared_ptr<Shape> &shape, float i)
                 : Light(c, i), T(shape), area(shape->area()) {}

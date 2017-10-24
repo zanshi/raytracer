@@ -18,13 +18,13 @@ namespace rays {
                              const std::shared_ptr<AreaLight> &l = nullptr)
                 : shape(s), bsdf(b), areaLight(l) {}
 
-        bool intersect(Ray &ray, IntersectionInfo *isect) const;
+        bool intersect(const Ray &ray, IntersectionInfo *isect) const;
 
         const AreaLight *getAreaLight() const;
 
         std::shared_ptr<Shape> shape;
         std::shared_ptr<BSDF> bsdf;
-        std::shared_ptr<AreaLight> areaLight{nullptr};
+        std::shared_ptr<AreaLight> areaLight;
 
     };
 

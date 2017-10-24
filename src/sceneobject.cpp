@@ -9,7 +9,7 @@
 
 namespace rays {
 
-    bool SceneObject::intersect(Ray &ray, IntersectionInfo *isect) const {
+    bool SceneObject::intersect(const Ray &ray, IntersectionInfo *isect) const {
 
         // tHit is used to get the closest intersection point
         float tHit;

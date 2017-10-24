@@ -19,34 +19,37 @@ namespace rays {
         // Loop over each pixel
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
+		const int width = plane.size();
+		const int height = plane[0].size();
 
 		CameraPlane tempPlane = plane;
 
         RNG rng{};
-#pragma omp parallel for default(none) shared(tempPlane, scene) private(rng) schedule(dynamic, 16)
-        for (int i = 0; i < plane.size(); i++) {
-            for (int j = 0; j < plane[0].size(); j++) {
-                ColorDbl L{0, 0, 0};
-                Vector3f direction;
+        glm::vec3 direction;
+#pragma omp parallel for collapse(2) default(none) shared(tempPlane, scene) private(rng, direction) schedule(dynamic, 16)
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+				ColorDbl L = { 0,0,0 };
 
                 for (unsigned int k = 0; k < nSamples; k++) {
 
                     // Determine position on camera plane
-                    direction = normalize(Vertex3f{0, i * dx - offset, j * dx - offset} - eyes[eyeIdx]);
+                    direction = normalize(glm::vec3{0, i * dx - offset, offset - j * dx} - eyes[eyeIdx]);
 
                     // Create eye -> camera plane ray
-                    auto ray = Ray(eyes[eyeIdx], direction);
+                    const Ray ray(eyes[eyeIdx], direction);
+
                     L += trace(ray, scene, rng, 0, false);
                 }
 
-                tempPlane[i][j].color = L / nSamples;
+                tempPlane[i][j] = L / nSamples;
             }
         }
 
 		plane = tempPlane;
     }
 
-    void Camera::createImage(const std::string &filename) {
+    void Camera::createImage(const std::string &filename) const {
 
         auto height = plane.size();
         auto width = plane[0].size();
@@ -58,7 +61,7 @@ namespace rays {
 
         for (unsigned int i = 0; i < plane.size(); i++) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
-                auto ldr = toneMap(plane[i][j].color, maxVal);
+                auto ldr = toneMap(plane[i][j], maxVal);
                 outImg[3 * (width * j + i) + 0] = ldr[0];
                 outImg[3 * (width * j + i) + 1] = ldr[1];
                 outImg[3 * (width * j + i) + 2] = ldr[2];
@@ -76,6 +79,7 @@ namespace rays {
     ColorChar Camera::toneMap(ColorDbl c, double iMax) const {
         ColorChar rgb{0, 0, 0};
         c = clamp(c, 0.0, 1.0);
+		c = gammaCorrect(c);
         rgb[0] = static_cast<unsigned char>(c.r * 255);
         rgb[1] = static_cast<unsigned char>(c.g * 255);
         rgb[2] = static_cast<unsigned char>(c.b * 255);
@@ -87,14 +91,14 @@ namespace rays {
         double maxVal = std::numeric_limits<double>::min();
         for (const auto &i : plane) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
-                maxVal = i[j].color.maxColorVal(maxVal);
+                maxVal = i[j].maxColorVal(maxVal);
             }
         }
 
         return maxVal;
     }
 
-    ColorDbl Camera::trace(Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const {
+    ColorDbl Camera::trace(const Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const {
 
         ColorDbl L{0.0, 0.0, 0.0};
 
@@ -112,15 +116,17 @@ namespace rays {
             return L;
         }
 
-        Vector3f woWorld = isect.wo; // Should be normalized
-        Vector3f n = isect.n; // Should be normalized
+        glm::vec3 woWorld = isect.wo; // Should be normalized
+        glm::vec3 n = isect.n; // Should be normalized
+		const glm::vec3 hitPoint = isect.p;
+		
 
         // Create local coordinate system
-        Vector3f ss, ts;
+        glm::vec3 ss, ts;
         coordinateSystem(n, &ss, &ts);
 
         // Transform wo to local
-        Vector3f wo = normalize(worldToLocal(ss, ts, n, woWorld));
+        glm::vec3 wo = normalize(worldToLocal(ss, ts, n, woWorld));
 
         // From here on, the calculations are in the local coordinate system of the
         // current hemisphere
@@ -161,43 +167,45 @@ namespace rays {
             const int M = 10; // TODO move this
             for (const auto &l : scene.lights) {
 //                if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
+
+				Shape* tri = l->T.get();
                 ColorDbl Ld{0, 0, 0};
                 for (unsigned int i = 0; i < M; i++) {
-                    Vertex3f q = l->T->getRandomPoint(rng); // random point on the triangle
-                    Vector3f wiWorld = normalize(q - isect.p);
+                    glm::vec3 q = tri->getRandomPoint(rng); // random point on the triangle
+                    glm::vec3 wiWorld = normalize(q - hitPoint);
                     IntersectionInfo shadowIsect;
-                    Ray shadowRay(isect.p + n * epsilon, wiWorld);
-                    if (scene.intersect(shadowRay, &shadowIsect) && shadowIsect.shape == l->T.get()) {
+                    Ray shadowRay(hitPoint + n * epsilon, wiWorld);
+                    if (scene.intersect(shadowRay, &shadowIsect) && shadowIsect.shape == tri) {
                         // No occlusion! Add contribution from this ray
-                        Vector3f wi = worldToLocal(ss, ts, n, wiWorld);
+                        glm::vec3 wi = worldToLocal(ss, ts, n, wiWorld);
                         wi = normalize(wi);
-                        Vector3f shadowN = normalize(shadowIsect.n);
+                        glm::vec3 shadowN = normalize(shadowIsect.n);
                         ColorDbl f = isect.brdf->fr(&wi, wo);
 
                         // Calculate geometric term
                         // TODO Check if this is valid for spheres (probably not)
                         float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
-                                  distance2(q, isect.p);
-                        Ld += f * G;
+                                  glm::distance2(q, hitPoint);
+                        Ld += PI * f * G;
                     }
                 }
                 L += (l->area * l->L0 * l->intensity * Ld) / M;
             }
 
             // Reflect in random direction
-            float phi = ((2.f * PI) / P) * rng.getUniform1D();
+            float phi = ((2.f * PI) * invP) * rng.getUniform1D();
             // Russian roulette
             if (phi > 2.f * PI) {
-                return L;
+				return ColorDbl{};
             }
 
             float theta = std::acos(std::sqrt(rng.getUniform1D()));
-            Vector3f wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
+            glm::vec3 wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
             wi = normalize(wi);
-            Vector3f wiWorld = normalize(localToWorld(ss, ts, n, wi));
+            glm::vec3 wiWorld = normalize(localToWorld(ss, ts, n, wi));
 
-            Ray newRay(isect.p + n * epsilon, wiWorld);
-            L += (PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) / P;
+            Ray newRay(hitPoint + n * epsilon, wiWorld);
+            L += (PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) * invP;
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays
@@ -205,31 +213,33 @@ namespace rays {
             // calculate the importance contribution
 
             specularBounce = true;
-            Vector3f I = ray.d;
-            Vector3f RWorld = normalize(reflect(I, n));
-            Vector3f T;
+            glm::vec3 I = ray.d;
+            glm::vec3 RWorld = normalize(reflect(I, n));
+            glm::vec3 T;
+			const float index = isect.brdf->index;
+			auto && brdfColor = isect.brdf->R;
 
             // ---------------------
             // Reflection
-            float fresnelReflectionCoefficient = fresnel(dot(I,n), isect.brdf->index);
+            float fresnelReflectionCoefficient = fresnel(dot(I,n), index);
 
             bool outside = dot(I,n) < 0;
-            Vector3f bias = epsilon * n;
+            glm::vec3 bias = epsilon * n;
 
-            Vertex3f reflectionRayOrig = outside ? isect.p + bias : isect.p - bias;
+            glm::vec3 reflectionRayOrig = outside ? hitPoint + bias : hitPoint - bias;
             Ray reflectionRay(reflectionRayOrig, RWorld);
             ColorDbl traced = trace(reflectionRay, scene, rng, depth + 1, specularBounce);
-            ColorDbl rColor = fresnelReflectionCoefficient * isect.brdf->R * traced;
+            ColorDbl rColor = fresnelReflectionCoefficient * brdfColor * traced;
             L += rColor;
 
             // ---------------------
             // Refraction
-            if (refract(&T, I, n, isect.brdf->index)) {
-                Vector3f TWorld = normalize(T);
-                Vertex3f refractionRayOrig = outside ? isect.p - bias : isect.p + bias;
+            if (refract(&T, I, n, index)) {
+                glm::vec3 TWorld = normalize(T);
+                glm::vec3 refractionRayOrig = outside ? hitPoint - bias : hitPoint + bias;
                 Ray refractedRay(refractionRayOrig, TWorld);
                 ColorDbl TColor = trace(refractedRay, scene, rng, depth + 1, specularBounce);
-                L += (1.0f - fresnelReflectionCoefficient) * isect.brdf->R * TColor;
+                L += (1.0f - fresnelReflectionCoefficient) * brdfColor * TColor;
             }
         }
 

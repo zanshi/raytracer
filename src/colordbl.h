@@ -9,6 +9,8 @@
 
 namespace rays {
     struct ColorDbl {
+
+        ColorDbl() : r(0), g(0), b(0) {}
         ColorDbl(double r, double g, double b) : r(r), g(g), b(b) {}
 
         double r;

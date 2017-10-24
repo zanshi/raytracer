@@ -7,7 +7,6 @@
 
 #include "common.h"
 #include "colordbl.h"
-#include "direction.h"
 #include "vertex.h"
 
 namespace rays {
@@ -16,7 +15,7 @@ namespace rays {
 
         virtual ~Shape() = default;
 
-        virtual bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;
+        virtual bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;
 
         virtual Vertex3f getRandomPoint(RNG &rng) const = 0;
 

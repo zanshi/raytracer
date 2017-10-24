@@ -8,7 +8,7 @@
 
 namespace rays {
 
-    bool Sphere::intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const {
+    bool Sphere::intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const {
 
         float t0, t1;
 

@@ -120,10 +120,10 @@ auto createTetrahedron() {
     std::vector<SceneObject> tetrahedron;
 
     // Define vertices
-    Vertex3f v0{7.0f, 4.8f, -3.0f};
-    Vertex3f v1{7.0f, -4.8f, -3.0f};
-    Vertex3f v2{3.5f, 0.0f, -4.5f};
-    Vertex3f v3{5.0f, 0.0f, 0.0f};
+    Vertex3f v0{6.0f, 4.8f, -4.0f};
+    Vertex3f v1{6.0f, -4.8f, -4.0f};
+    Vertex3f v2{4.8f, -2.0f, -2.0f};
+    Vertex3f v3{5.5f, -1.0f, 0.0f};
 
     std::vector<Vertex3f> vertices{v0, v1, v2, v3};
 
@@ -137,7 +137,7 @@ auto createTetrahedron() {
     // Define surface
     const ColorDbl red{0.8, 0.2, 0.2};
     const ColorDbl white{0.8, 0.8, 0.8};
-    const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(white);
+    const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(white, 0.4f);
 
     // Create and add scene objects
     tetrahedron.emplace_back(t0, surface);
@@ -154,10 +154,10 @@ auto createAreaLights() {
 
     std::vector<SceneObject> lightTriangles;
 
-    Vertex3f v0{5.0f, 2.0f, 4.99f};
-    Vertex3f v1{7.0f, 2.0f, 4.99f};
-    Vertex3f v2{7.0f, -2.0f, 4.99f};
-    Vertex3f v3{5.0f, -2.0f, 4.99f};
+    Vertex3f v0{4.0f, 1.5f, 4.99f};
+    Vertex3f v1{5.5f, 1.5f, 4.99f};
+    Vertex3f v2{5.5f, -1.5f, 4.99f};
+    Vertex3f v3{4.0f, -1.5f, 4.99f};
     std::vector<Vertex3f> vertices{v0, v1, v2, v3};
 
     const auto mesh = std::make_shared<TriangleMesh>(std::move(vertices));
@@ -167,7 +167,7 @@ auto createAreaLights() {
     const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle(mesh, {2, 3, 0}));
 
     ColorDbl white{1.0, 1.0, 1.0};
-    float intensity = 40;
+    float intensity = 16;
 
     const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(white);
 
@@ -179,7 +179,7 @@ auto createAreaLights() {
     lightTriangles.emplace_back(t0, surface, areaLights[0]);
     lightTriangles.emplace_back(t1, surface, areaLights[1]);
 
-    return std::make_tuple(lightTriangles, areaLights);
+    return lightTriangles;
 
 }
 
@@ -187,33 +187,35 @@ auto createAreaLights() {
 Scene setupScene() {
     // Create scene
     auto world = createWorld();
-    // Add a sphere
-    ColorDbl red{0.8, 0.1, 0.1};
-    ColorDbl white{1, 1, 1};
-    const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(white, 1.52f);
-    const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(red, 0.3f);
-    auto sphere = SceneObject(std::make_shared<Sphere>(Sphere({4.3f, 2.8f, 1.0f}, 2.2f)),
-                              glass_material);
-    auto sphere2 = SceneObject(std::make_shared<Sphere>(Sphere({4.0f, -2.2f, 1.5}, 2.0f)),
-                               diffuse_material);
-    world.push_back(sphere);
-    world.push_back(sphere2);
-
+    
     // Add the tetrahedron to the scene
     auto tetrahedron = createTetrahedron();
     world.insert(end(world), std::make_move_iterator(begin(tetrahedron)), std::make_move_iterator(end(tetrahedron)));
 
     // Add area lights
-    auto[areaLightTris, lights] = createAreaLights();
+    auto areaLightTris = createAreaLights();
     world.insert(end(world), std::make_move_iterator(begin(areaLightTris)),
                  std::make_move_iterator(end(areaLightTris)));
 
-//    std::vector<std::shared_ptr<AreaLight>> lights;
-//    for (const auto &object : world) {
-//        if (object.getAreaLight() != nullptr) {
-//            lights.emplace_back(object.areaLight);
-//        }
-//    }
+	// Add a sphere
+    ColorDbl red{0.8, 0.1, 0.1};
+    ColorDbl white{1, 1, 1};
+    const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(white, 1.52f);
+    const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(red, 0.3f);
+    auto sphere = SceneObject(std::make_shared<Sphere>(Sphere({4.8f, 2.8f, -2.2f}, 2.2f)),
+                              glass_material);
+    auto sphere2 = SceneObject(std::make_shared<Sphere>(Sphere({4.5f, -2.2f, -2.3f}, 2.0f)),
+                               diffuse_material);
+    world.push_back(sphere);
+    world.push_back(sphere2);
+
+	std::vector<std::shared_ptr<AreaLight>> lights;
+	for (const auto &object : world) {
+		if (object.getAreaLight() != nullptr) {
+			lights.emplace_back(object.areaLight);
+		}
+	}
+
 
     return Scene(std::move(world), std::move(lights));
 
@@ -225,7 +227,7 @@ Camera setupCamera() {
     eyes[0] = Vertex3f(-2.0f, 0.f, 0.f);
     eyes[1] = Vertex3f(-0.5f, 0.f, 0.f);
 
-    return Camera(eyes, 256, 256, 1, 32);
+    return Camera(eyes, 512, 512, 1, 16);
 }
 
 int main() {
@@ -234,7 +236,12 @@ int main() {
     auto camera = setupCamera();
 
     // Render the scene
+	auto t0 = std::chrono::system_clock::now();
     camera.render(scene);
+	auto end = std::chrono::system_clock::now();
+
+	auto totalTime = std::chrono::duration_cast<std::chrono::seconds>(end - t0);
+	std::cout << "Total rendering time: " << totalTime.count() << " seconds. " << std::endl;
 
     // Save an image to out.png
     camera.createImage("out.png");

@@ -8,7 +8,7 @@
 
 namespace rays {
 
-    bool Scene::intersect(Ray &ray, IntersectionInfo *isect) const {
+    bool Scene::intersect(const Ray &ray, IntersectionInfo *isect) const {
         // Check for intersection with every object in the scene
         bool hit = false;
         for (const auto &o : objects) {

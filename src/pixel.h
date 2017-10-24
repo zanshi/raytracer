@@ -10,9 +10,9 @@
 
 namespace rays {
 
-    struct Pixel {
-        ColorDbl color{0, 0, 0};
-    };
+//    struct Pixel {
+//        ColorDbl color{0, 0, 0};
+//    };
 
 }
 #endif //RAYTRACER_PIXEL_H

@@ -51,6 +51,10 @@ namespace rays {
     constexpr const float PI = 3.14159265359f;
     constexpr const float invPI = 1.0f / PI;
 
+
+	constexpr const float P = 0.75f;
+	constexpr float invP = 1 / P;
+
     // Utility functions
     template<typename T>
     inline float clamp(const T &v, const T &lo, const T &hi) { return std::max(lo, std::min(hi, v)); }

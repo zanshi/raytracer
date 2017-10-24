@@ -6,17 +6,18 @@
 #include "ray.h"
 #include "intersectioninfo.h"
 
-#include <glm/gtx/intersect.hpp>
-
 namespace rays {
 
-    bool Triangle::intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const {
+    bool Triangle::intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const {
+//		if (glm::dot(ray.d, normal) > 0) { return false; }
         // Möller-Trumbore
         // Based on the canonical implementation
         const auto &v0 = getV0();
         const auto &v1 = getV1();
         const auto &v2 = getV2();
 //        const auto &d = ray.d;
+
+
 
         glm::vec3 p0t = v0 - ray.o;
         glm::vec3 p1t = v1 - ray.o;
@@ -49,6 +50,19 @@ namespace rays {
         float e2 = p0t.x * p1t.y - p0t.y * p1t.x;
 
 
+		// Fall back to double precision test at triangle edges
+		if (e0 == 0.0f || e1 == 0.0f || e2 == 0.0f) {
+			double p2txp1ty = (double)p2t.x * (double)p1t.y;
+			double p2typ1tx = (double)p2t.y * (double)p1t.x;
+			e0 = (float)(p2typ1tx - p2txp1ty);
+			double p0txp2ty = (double)p0t.x * (double)p2t.y;
+			double p0typ2tx = (double)p0t.y * (double)p2t.x;
+			e1 = (float)(p0typ2tx - p0txp2ty);
+			double p1txp0ty = (double)p1t.x * (double)p0t.y;
+			double p1typ0tx = (double)p1t.y * (double)p0t.x;
+			e2 = (float)(p1typ0tx - p1txp0ty);
+		}
+
         if ((e0 < 0 || e1 < 0 || e2 < 0) && (e0 > 0 || e1 > 0 || e2 > 0))
             return false;
         float det = e0 + e1 + e2;
@@ -79,66 +93,6 @@ namespace rays {
 
         return true;
 
-
-
-//        const auto e1 = v1 - v0;
-//        const auto e2 = v2 - v0;
-//        const auto dir = ray.d;
-//        const auto P = cross(dir, e2);
-//
-//        // Use determinant to bail out early in case the triangle is facing away
-//        float det = dot(e1, P);
-//
-//        Vector3f Q;
-//
-//        const float epsilon = std::numeric_limits<float>::epsilon();
-////        const float epsilon = 1e-5f;
-//
-//        if (det > epsilon) {
-//            const Vector3f T = ray.o - v0;
-//            float u = dot(T, P);
-//
-//            if (u < 0.0 || u > det) {
-//                return false;
-//            }
-//
-//            // Test bounds for v
-//            Q = cross(T, e1);
-//            float v = dot(dir, Q);
-//            if (v < 0.0 || u + v > det) {
-//                return false;
-//            }
-//
-//        } else if (det < -epsilon) {
-//            // Test bounds for u
-//            const Vector3f T = ray.o - v0;
-//            float u = dot(T, P);
-//            if (u > 0.0 || u < det) {
-//                return false;
-//            }
-//            Q = cross(T, e1);
-//            float v = dot(dir, Q);
-//            if (v > 0.0 || u + v < det) {
-//                return false;
-//            }
-//
-//        } else { return false; }
-//
-//        // We have a match!
-//        // Calculate t
-//        float invDet = 1.0f / det;
-//
-//        float t = dot(e2, Q) * invDet;
-//        if (t > ray.tMax) { return false; } // Bailout if intersection point is further away
-//
-//        *tHit = t;
-//        Vertex3f end = ray.o + t * dir;
-//
-//        *isect = IntersectionInfo(end, -ray.d, normal, this);
-//
-//        return true;
-
-
     }
 
     float Triangle::area() const {
@@ -148,19 +102,19 @@ namespace rays {
         return 0.5f * (cross((v1 - v0), (v2 - v0))).length();
     }
 
-    const Vertex3f &Triangle::getV0() const {
+    const glm::vec3 &Triangle::getV0() const {
         return mesh->V[indices[0]];
     }
 
-    const Vertex3f &Triangle::getV1() const {
+    const glm::vec3 &Triangle::getV1() const {
         return mesh->V[indices[1]];
     }
 
-    const Vertex3f &Triangle::getV2() const {
+    const glm::vec3 &Triangle::getV2() const {
         return mesh->V[indices[2]];
     }
 
-    Vertex3f Triangle::getRandomPoint(RNG &rng) const {
+    glm::vec3 Triangle::getRandomPoint(RNG &rng) const {
         float u, v;
         do {
             u = rng.getUniform1D();

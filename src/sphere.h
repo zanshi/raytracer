@@ -16,7 +16,7 @@ namespace rays {
 
         ~Sphere() final = default;
 
-        bool intersect(Ray &ray, IntersectionInfo *isect, float *tHit) const override;
+        bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const override;
 
         float area() const override;
 

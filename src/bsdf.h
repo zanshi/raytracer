@@ -29,7 +29,7 @@ namespace rays {
     }
 
     inline float absDot(const glm::vec3 &v0, const glm::vec3 &v1) {
-        return std::abs(dot(v0, v1));
+        return std::abs(glm::dot(v0, v1));
     }
 
     inline float cosTheta(const glm::vec3 &v) {
@@ -73,58 +73,46 @@ namespace rays {
         return wo - 2 * glm::dot(n,wo) * n;
     }
 
-    inline bool refract(glm::vec3 *wt, const glm::vec3 &wi, const glm::vec3 &n, float index) {
+    inline bool refract(glm::vec3 *wt, const glm::vec3 &wi, const glm::vec3 &n, float invEta) {
 
-        float cosThetaI = clamp(dot(n,wi), -1.0f, 1.0f);
-
-        float n1 = AIR_INDEX;
-        float n2 = index;
-        glm::vec3 N = n;
-
-//        bool entering = cosThetaI > 0.0f;
-//        if (!entering) {
-//            float temp = n1;
-//            n1 = n2;
-//            n2 = temp;
-//            N = -N;
-////            cosThetaI = std::abs(cosThetaI);
-//        }
-        if (cosThetaI < 0) { cosThetaI = -cosThetaI; }
-        else {
-            std::swap(n1, n2);
-            N = -N;
-        }
+        float cosThetaI = clamp(glm::dot(n,wi), -1.0f, 1.0f);
 
 
-        float eta = n1 / n2;
-
-        float k = 1 - eta * eta * (1 - cosThetaI * cosThetaI);
+        float k = 1 - invEta * invEta * (1 - cosThetaI * cosThetaI);
         if (k < 0) { return false; }
 
-        *wt = eta * wi + (eta * cosThetaI - std::sqrt(k)) * n;
+        *wt = glm::normalize(invEta * wi + (invEta * cosThetaI - std::sqrt(k)) * n);
 
         return true;
 
     }
 
     // Calculate Dielectric-Dielectric reflection coefficient
-    inline float fresnel(float cosThetaI, float index) {
-        cosThetaI = clamp(cosThetaI, -1.0f, 1.0f);
-        float n1 = AIR_INDEX;
-        float n2 = index;
+    inline float fresnel(float cosThetaI, float eta) {
+//        cosThetaI = clamp(cosThetaI, -1.0f, 1.0f);
+//        float n1 = AIR_INDEX;
+//        float n2 = index;
+//
+//        if (cosThetaI > 0) { std::swap(n1, n2); }
+//
+//        float sinThetaI = std::sqrt(std::max(0.0f, 1 - cosThetaI * cosThetaI));
+//        float sinThetaT = n1 / n2 * sinThetaI;
+//
+//        // Handle total internal reflection
+//        if (sinThetaT >= 1) return 1;
+//        float cosThetaT = std::sqrt(std::max(0.0f, 1 - sinThetaT * sinThetaT));
+//        cosThetaI = std::abs(cosThetaI);
+//        float Rs = ((n2 * cosThetaI) - (n1 * cosThetaT)) / ((n2 * cosThetaI) + (n1 * cosThetaT));
+//        float Rp = ((n1 * cosThetaI) - (n2 * cosThetaT)) / ((n1 * cosThetaI) + (n2 * cosThetaT));
+//        return (Rs * Rs + Rp * Rp) / 2;
 
-        if (cosThetaI > 0) { std::swap(n1, n2); }
+        // Schlick
+        float etaMinus = eta - 1;
+        float etaPlus = eta + 1;
 
-        float sinThetaI = std::sqrt(std::max(0.0f, 1 - cosThetaI * cosThetaI));
-        float sinThetaT = n1 / n2 * sinThetaI;
+        float R0 = (etaMinus * etaMinus ) / (etaPlus * etaPlus);
 
-        // Handle total internal reflection
-        if (sinThetaT >= 1) return 1;
-        float cosThetaT = std::sqrt(std::max(0.0f, 1 - sinThetaT * sinThetaT));
-        cosThetaI = std::abs(cosThetaI);
-        float Rs = ((n2 * cosThetaI) - (n1 * cosThetaT)) / ((n2 * cosThetaI) + (n1 * cosThetaT));
-        float Rp = ((n1 * cosThetaI) - (n2 * cosThetaT)) / ((n1 * cosThetaI) + (n2 * cosThetaT));
-        return (Rs * Rs + Rp * Rp) / 2;
+        return R0 + (1.0f - R0) * std::pow(1.0f - cosThetaI, 5.0f);
 
     }
 
@@ -219,12 +207,26 @@ namespace rays {
         ~Glass() override = default;
 
         ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
-//            *wi = glm::vec3(-wo.x, -wo.y, wo.z);
             return R;
         }
 
         BSDF_Type getType() const override {
             return BSDF_TRANSPARENT;
+        }
+
+    };
+
+    struct Mirror final : BSDF {
+        explicit Mirror(const ColorDbl &c, float index) : BSDF(c, index) {}
+
+        ~Mirror() override = default;
+
+        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
+            return R;
+        }
+
+        BSDF_Type getType() const override {
+            return BSDF_SPECULAR;
         }
 
     };

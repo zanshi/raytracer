@@ -19,34 +19,50 @@ namespace rays {
         // Loop over each pixel
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
-		const int width = plane.size();
-		const int height = plane[0].size();
+        const int width = plane.size();
+        const int height = plane[0].size();
 
-		CameraPlane tempPlane = plane;
+        CameraPlane tempPlane = plane;
 
         RNG rng{};
         glm::vec3 direction;
-#pragma omp parallel for collapse(2) default(none) shared(tempPlane, scene) private(rng, direction) schedule(dynamic, 16)
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-				ColorDbl L = { 0,0,0 };
+#pragma omp parallel for collapse(1) default(none) shared(tempPlane, scene) private(rng, direction) schedule(dynamic, 16)
+        for (int y = 0; y < width; y++) {
+            for (int z = 0; z < height; z++) {
+                ColorDbl L = {0, 0, 0};
 
-                for (unsigned int k = 0; k < nSamples; k++) {
+                for (int sy = 0; sy < 2; sy++) {
+                    for (int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
+                        for (unsigned int k = 0; k < nSamples; k++) {
 
-                    // Determine position on camera plane
-                    direction = glm::normalize(glm::vec3{0, i * dx - offset, offset - j * dx} - eyes[eyeIdx]);
+                            // Determine position on camera plane
+                            float r1 = 2 * rng.getUniform1D();
+                            float r2 = 2 * rng.getUniform1D();
+                            float offY = r1 < 1 ? glm::sqrt(r1) - 1 : 1 - glm::sqrt(2 - r1);
+                            float offZ = r2 < 1 ? glm::sqrt(r2) - 1 : 1 - glm::sqrt(2 - r2);
 
-                    // Create eye -> camera plane ray
-                    const Ray ray(eyes[eyeIdx], direction);
+                            offY = (sy + 0.5f + offY) / 2 + y;
+                            offZ = (sz + 0.5f + offZ) / 2 + z;
 
-                    L += trace(ray, scene, rng, 0, false);
+//                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
+                            direction = glm::normalize(
+                                    glm::vec3{0, offY * dx - offset, offset - offZ * dx} - eyes[eyeIdx]);
+
+                            // Create eye -> camera plane ray
+                            const Ray ray(eyes[eyeIdx], direction);
+
+                            L += trace(ray, scene, rng, 0, false);
+                        }
+                        L = L / nSamples;
+
+                        tempPlane[y][z] += L * 0.25;
+                    }
                 }
 
-                tempPlane[i][j] = L / nSamples;
             }
         }
 
-		plane = tempPlane;
+        plane = tempPlane;
     }
 
     void Camera::createImage(const std::string &filename) const {
@@ -79,7 +95,7 @@ namespace rays {
     ColorChar Camera::toneMap(ColorDbl c, double iMax) const {
         ColorChar rgb{0, 0, 0};
         c = clamp(c, 0.0, 1.0);
-		c = gammaCorrect(c);
+        c = gammaCorrect(c);
         rgb[0] = static_cast<unsigned char>(c.r * 255);
         rgb[1] = static_cast<unsigned char>(c.g * 255);
         rgb[2] = static_cast<unsigned char>(c.b * 255);
@@ -112,14 +128,14 @@ namespace rays {
         bool intersected = scene.intersect(ray, &isect);
 
         if (!intersected) {
-//            std::cerr << "Ray escaped scene" << std::endl;
+            std::cerr << "Ray escaped scene" << std::endl;
             return L;
         }
 
         glm::vec3 woWorld = isect.wo; // Should be normalized
         glm::vec3 n = isect.n; // Should be normalized
-		const glm::vec3 hitPoint = isect.p;
-		
+        const glm::vec3 hitPoint = isect.p;
+
 
         // Create local coordinate system
         glm::vec3 ss, ts;
@@ -135,10 +151,11 @@ namespace rays {
         // Add contribution from light and terminate.
         // We only care about the first bounce and specular reflections
         if (auto l = isect.obj->getAreaLight()) {
-            if (depth == 0 || specularBounce) {
+            if (depth == 0) {
                 L += l->L0 * l->intensity;
             }
             return L;
+//            return l->L0;
         }
 
         const float epsilon = 1e-5f;
@@ -163,12 +180,18 @@ namespace rays {
 
             specularBounce = false;
 
+            // Reflect in random direction
+            float phi = ((2.f * PI) * invP) * rng.getUniform1D();
+            // Russian roulette
+            if (phi > 2.f * PI) {
+                return L;
+            }
 
-            const int M = 10; // TODO move this
+            const int M = 6; // TODO move this
             for (const auto &l : scene.lights) {
 //                if (isect.obj->getAreaLight() == l.get()) continue; // Lights shouldn't light themselves
 
-				Shape* tri = l->T.get();
+                Shape *tri = l->T.get();
                 ColorDbl Ld{0, 0, 0};
                 for (unsigned int i = 0; i < M; i++) {
                     glm::vec3 q = tri->getRandomPoint(rng); // random point on the triangle
@@ -183,29 +206,36 @@ namespace rays {
                         ColorDbl f = isect.brdf->fr(&wi, wo);
 
                         // Calculate geometric term
-                        // TODO Check if this is valid for spheres (probably not)
-                        float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
+//                        float G = (absDot(shadowIsect.wo, shadowN) * absDot(wiWorld, n)) /
+//                                  glm::distance2(q, hitPoint);
+                        float G = glm::abs((glm::dot(shadowIsect.wo, shadowN) * glm::dot(wiWorld, n))) /
                                   glm::distance2(q, hitPoint);
-                        Ld += PI * f * G;
+                        Ld += f * G;
                     }
                 }
-                L += (l->area * l->L0 * l->intensity * Ld) / M;
+                L += (PI * l->area * l->L0 * l->intensity * Ld) / M;
             }
 
-            // Reflect in random direction
-            float phi = ((2.f * PI) * invP) * rng.getUniform1D();
-            // Russian roulette
-            if (phi > 2.f * PI) {
-				return ColorDbl{};
-            }
 
-            float theta = std::acos(std::sqrt(rng.getUniform1D()));
-            glm::vec3 wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
+//            float theta = std::acos(std::sqrt(rng.getUniform1D()));
+            float r = glm::sqrt(rng.getUniform1D());
+//            glm::vec3 wi = {std::cos(phi) * std::sin(theta), std::sin(phi) * std::sin(theta), std::cos(theta)};
+            glm::vec3 wi = {r * glm::sin(phi), r * glm::cos(phi), glm::sqrt(1 - r * r)};
             wi = normalize(wi);
             glm::vec3 wiWorld = normalize(localToWorld(ss, ts, n, wi));
 
             Ray newRay(hitPoint + n * epsilon, wiWorld);
-            L += (PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) * invP;
+            return L + (PI * trace(newRay, scene, rng, depth + 1, specularBounce) * isect.brdf->fr(&wi, wo)) * invP;
+
+        } else if (isect.brdf->getType() == BSDF_SPECULAR) {
+
+            specularBounce = true;
+
+            glm::vec3 R = glm::normalize(reflect(ray.d, n));
+            const glm::vec3 bias = epsilon * n;
+            Ray reflectionRay(hitPoint + bias, R);
+
+            return trace(reflectionRay, scene, rng, depth + 1, specularBounce);
 
         } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
             // Send reflection and refraction rays
@@ -214,33 +244,48 @@ namespace rays {
 
             specularBounce = true;
             glm::vec3 I = ray.d;
-            glm::vec3 RWorld = normalize(reflect(I, n));
+            const float index = isect.brdf->index;
+
+            float cosThetaI = glm::dot(I, n);
+            glm::vec3 nI = n;
+            float eta = index;
+            bool entering = cosThetaI < 0;
+            if (entering) {
+                eta = 1.0f / index;
+            } else {
+                nI = -n;
+            }
+
+            glm::vec3 R = glm::normalize(reflect(I, nI));
             glm::vec3 T;
-			const float index = isect.brdf->index;
-			auto && brdfColor = isect.brdf->R;
+
+            const glm::vec3 bias = epsilon * n;
+            const glm::vec3 reflectionRayOrig = entering ? hitPoint + bias : hitPoint - bias;
+            Ray reflectionRay(reflectionRayOrig, R);
+
+            if (!refract(&T, I, nI, eta)) { // returns false for total internal reflection
+                return trace(reflectionRay, scene, rng, depth + 1, specularBounce);
+            }
+
+            float Rs;
+
+            if (entering) {
+                Rs = fresnel(glm::dot(-I, nI), eta);
+            } else {
+                Rs = fresnel(glm::dot(T, n), eta);
+            }
+
 
             // ---------------------
             // Reflection
-            float fresnelReflectionCoefficient = fresnel(glm::dot(I,n), index);
 
-            bool outside = glm::dot(I,n) < 0;
-            glm::vec3 bias = epsilon * n;
+            glm::vec3 refractionRayOrig = entering ? hitPoint - bias : hitPoint + bias;
+            Ray refractionRay(refractionRayOrig, T);
 
-            glm::vec3 reflectionRayOrig = outside ? hitPoint + bias : hitPoint - bias;
-            Ray reflectionRay(reflectionRayOrig, RWorld);
-            ColorDbl traced = trace(reflectionRay, scene, rng, depth + 1, specularBounce);
-            ColorDbl rColor = fresnelReflectionCoefficient * brdfColor * traced;
-            L += rColor;
+            return trace(reflectionRay, scene, rng, depth + 1, specularBounce) * Rs +
+                   trace(refractionRay, scene, rng, depth + 1, specularBounce) * (1 - Rs);
 
-            // ---------------------
-            // Refraction
-            if (refract(&T, I, n, index)) {
-                glm::vec3 TWorld = normalize(T);
-                glm::vec3 refractionRayOrig = outside ? hitPoint - bias : hitPoint + bias;
-                Ray refractedRay(refractionRayOrig, TWorld);
-                ColorDbl TColor = trace(refractedRay, scene, rng, depth + 1, specularBounce);
-                L += (1.0f - fresnelReflectionCoefficient) * brdfColor * TColor;
-            }
+
         }
 
 

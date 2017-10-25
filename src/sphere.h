@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "shape.h"
+#include "vector.h"
 
 namespace rays {
     struct Sphere final : public Shape {

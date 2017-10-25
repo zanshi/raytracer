@@ -42,6 +42,7 @@ namespace rays {
     struct Lambertian;
     struct OrenNayar;
     struct Glass;
+    struct Mirror;
 
     class Light;
     class AreaLight;

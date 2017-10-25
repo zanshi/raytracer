@@ -9,6 +9,7 @@
 #include "trianglemesh.h"
 #include "shape.h"
 #include "rng.h"
+#include "vector.h"
 
 namespace rays {
 

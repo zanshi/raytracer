@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include "common.h"
+#include "vector.h"
 
 namespace rays {
 
@@ -14,14 +15,15 @@ namespace rays {
 
     public:
         RNG() : gen{
-                static_cast<unsigned long long int>(std::chrono::high_resolution_clock::now().time_since_epoch().count())}, dis{0, 1} {}
+                static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count())},
+                dis{0, 1} {}
 
         float getUniform1D() { return dis(gen); }
 
-        std::pair<float, float> getUniform2D() { return std::make_pair(dis(gen), dis(gen)); };
+        glm::vec2 getUniform2D() { return glm::vec2(dis(gen), dis(gen)); };
 
     private:
-        std::mt19937_64 gen; //Standard mersenne_twister_engine seeded with rd()
+        std::mt19937 gen; //Standard mersenne_twister_engine seeded with rd()
         std::uniform_real_distribution<float> dis;
 
     };

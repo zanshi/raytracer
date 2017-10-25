@@ -5,6 +5,7 @@
 #include "triangle.h"
 #include "ray.h"
 #include "intersectioninfo.h"
+#include <glm/gtx/intersect.hpp>
 
 namespace rays {
 
@@ -49,18 +50,18 @@ namespace rays {
         float e2 = p0t.x * p1t.y - p0t.y * p1t.x;
 
 
-		// Fall back to double precision test at triangle edges
-		if (e0 == 0.0f || e1 == 0.0f || e2 == 0.0f) {
-			double p2txp1ty = (double)p2t.x * (double)p1t.y;
-			double p2typ1tx = (double)p2t.y * (double)p1t.x;
-			e0 = (float)(p2typ1tx - p2txp1ty);
-			double p0txp2ty = (double)p0t.x * (double)p2t.y;
-			double p0typ2tx = (double)p0t.y * (double)p2t.x;
-			e1 = (float)(p0typ2tx - p0txp2ty);
-			double p1txp0ty = (double)p1t.x * (double)p0t.y;
-			double p1typ0tx = (double)p1t.y * (double)p0t.x;
-			e2 = (float)(p1typ0tx - p1txp0ty);
-		}
+        // Fall back to double precision test at triangle edges
+//        if (e0 == 0.0f || e1 == 0.0f || e2 == 0.0f) {
+//            double p2txp1ty = (double) p2t.x * (double) p1t.y;
+//            double p2typ1tx = (double) p2t.y * (double) p1t.x;
+//            e0 = (float) (p2typ1tx - p2txp1ty);
+//            double p0txp2ty = (double) p0t.x * (double) p2t.y;
+//            double p0typ2tx = (double) p0t.y * (double) p2t.x;
+//            e1 = (float) (p0typ2tx - p0txp2ty);
+//            double p1txp0ty = (double) p1t.x * (double) p0t.y;
+//            double p1typ0tx = (double) p1t.y * (double) p0t.x;
+//            e2 = (float) (p1typ0tx - p1txp0ty);
+//        }
 
         if ((e0 < 0 || e1 < 0 || e2 < 0) && (e0 > 0 || e1 > 0 || e2 > 0))
             return false;
@@ -92,6 +93,46 @@ namespace rays {
 
         return true;
 
+//        float EPSILON = std::numeric_limits<float>::epsilon();
+//
+//        glm::vec3 T = ray.o - V[0];
+//        glm::vec3 E1 = V[1] - V[0];
+//        glm::vec3 E2 = V[2] - V[0];
+//        glm::vec3 D = ray.d;
+//
+//        glm::vec3 P = glm::cross(D, E2);
+//        glm::vec3 Q = glm::cross(T, E1);
+//
+//        float det = glm::dot(P, E1);
+//
+//        if(det > -EPSILON && det < EPSILON)
+//            return false;
+//
+//        float inverseDet = 1.0f/det;
+//
+//        float u = glm::dot(T, P) * inverseDet;
+//        float v = glm::dot(D, Q) * inverseDet;
+//
+//        if(u < 0.0f || u > 1.0f) {
+//            return false;
+//        }
+//
+//        if(v < 0.0f || u + v > 1.0f) {
+//            return false;
+//        }
+//
+//        float t = glm::dot(Q, E2) * inverseDet;
+//
+//        if(t > EPSILON) {
+//
+//            *tHit = t;
+//            glm::vec3 hitPoint = ray.o + t * ray.d;
+//            *isect = IntersectionInfo(hitPoint, -ray.d, normal, this);
+//            return true;
+//        }
+//
+//        return false;
+
     }
 
     float Triangle::area() const {
@@ -99,13 +140,24 @@ namespace rays {
     }
 
     glm::vec3 Triangle::getRandomPoint(RNG &rng) const {
-        float u, v;
-        do {
-            u = rng.getUniform1D();
-            v = rng.getUniform1D();
-        } while (u + v >= 1);
+//        float u, v;
+//        do {
+//            u = rng.getUniform1D();
+//            v = rng.getUniform1D();
+//        } while (u + v >= 1);
+//
+//        return (1 - u - v) * V[0] + u * V[1] + v * V[2];
+
+        // pbrt
+
+        glm::vec2 r = rng.getUniform2D();
+        float su0 = glm::sqrt(r[0]);
+
+        float u = 1 - su0;
+        float v = r[1] * su0;
 
         return (1 - u - v) * V[0] + u * V[1] + v * V[2];
+
     }
 
 

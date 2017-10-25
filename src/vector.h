@@ -9,7 +9,6 @@
 #include <cmath>
 #include "common.h"
 
-#define GLM_FORCE_CXX14
 #include <glm/glm.hpp>
 
 namespace rays {

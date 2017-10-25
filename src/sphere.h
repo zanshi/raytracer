@@ -10,8 +10,8 @@
 #include "vector.h"
 
 namespace rays {
-    struct Sphere final : public Shape {
-
+    class Sphere final : public Shape {
+    public:
         Sphere(const glm::vec3 &center, const float r) : center(center), r(r) {}
 
         ~Sphere() final = default;
@@ -22,6 +22,7 @@ namespace rays {
 
         glm::vec3 getRandomPoint(RNG &rng) const override;
 
+    private:
         const glm::vec3 center;
         const float r{1.f};
 

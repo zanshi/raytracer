@@ -17,6 +17,11 @@
 #include <cmath>
 #include <random>
 
+//#define GLM_FORCE_CXX14
+#define GLM_FORCE_SSE42 // or GLM_FORCE_SSE42 if your processor supports it
+#define GLM_FORCE_ALIGNED
+#define GLM_FORCE_EXPLICIT_CTOR
+
 #include <glm/fwd.hpp>
 
 namespace rays {
@@ -27,15 +32,13 @@ namespace rays {
     class RNG;
 
     class SceneObject;
-    struct Shape;
-    struct Sphere;
-    struct Triangle;
-    struct TriangleMesh;
+    class Shape;
+    class Sphere;
+    class Triangle;
 
     struct IntersectionInfo;
 
     struct Ray;
-    struct Pixel;
     struct ColorDbl;
 
     struct BSDF;

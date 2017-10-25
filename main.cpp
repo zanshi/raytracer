@@ -219,7 +219,7 @@ Camera setupCamera() {
     eyes[0] = glm::vec3(-2.0f, 0.f, 0.f);
     eyes[1] = glm::vec3(-1.0f, 0.f, 0.f);
 
-    return Camera(eyes, 128, 128, 1, 16);
+    return Camera(eyes, 256, 256, 1, 16);
 }
 
 int main() {

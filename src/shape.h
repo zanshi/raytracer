@@ -10,8 +10,8 @@
 
 namespace rays {
 
-    struct Shape {
-
+    class Shape {
+    public:
         virtual ~Shape() = default;
 
         virtual bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;

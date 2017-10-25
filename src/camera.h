@@ -23,13 +23,11 @@ namespace rays {
                   plane(x, std::vector<ColorDbl>(y)),
                   eyeIdx(currEyeIdx), nSamples(nSamples), dx(2.0f / x) {}
 
-        void render(const Scene &scene);
+        void render(Scene scene);
 
         void createImage(const std::string &filename) const;
 
     private:
-
-        ColorDbl trace(const Ray &ray, const Scene &scene, RNG &rng, int depth, bool specularBounce) const;
 
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
@@ -41,7 +39,6 @@ namespace rays {
         const unsigned int eyeIdx{0};
         const unsigned int nSamples = 64;
         const float dx{0.002f};
-        const int maxDepth = 7;
 
     };
 

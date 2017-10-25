@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -march=native -O3")
 
 
 FIND_PACKAGE(OpenMP REQUIRED)
@@ -49,7 +49,7 @@ if (MINGW)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
     SET(BUILD_SHARED_LIBRARIES OFF)
     SET(CMAKE_EXE_LINKER_FLAGS "-static")
-endif()
+endif ()
 
 add_executable(raytracer_exe main.cpp)
 

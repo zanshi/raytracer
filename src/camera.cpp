@@ -18,21 +18,20 @@ namespace rays {
         // Loop over each pixel
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
-        const int width = plane.size();
-        const int height = plane[0].size();
+        const int width = Options::width;
+        const int height = width;
 
         CameraPlane tempPlane = plane;
 
         RNG rng{};
-        glm::vec3 direction;
-#pragma omp parallel for collapse(2) default(none) shared(tempPlane) firstprivate(scene) private(rng, direction) schedule(dynamic, 16)
+#pragma omp parallel for collapse(2) default(none) shared(tempPlane) firstprivate(scene) private(rng) schedule(dynamic, 16)
         for (int y = 0; y < width; y++) {
             for (int z = 0; z < height; z++) {
                 ColorDbl L = {0, 0, 0};
 
                 for (int sy = 0; sy < 2; sy++) {
                     for (int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
-                        for (unsigned int k = 0; k < nSamples; k++) {
+                        for (unsigned int k = 0; k < Options::nrSamples; k++) {
 
                             // Determine position on camera plane
                             float r1 = 2 * rng.getUniform1D();
@@ -44,15 +43,15 @@ namespace rays {
                             offZ = (sz + 0.5f + offZ) / 2 + z;
 
 //                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
-                            direction = glm::normalize(
-                                    glm::vec3{0, offY * dx - offset, offset - offZ * dx} - eyes[eyeIdx]);
+                            auto direction = glm::normalize(
+                                    glm::vec3{0, offY * Options::dx - offset, offset - offZ * Options::dx} - eyePos);
 
                             // Create eye -> camera plane ray
-                            const Ray ray(eyes[eyeIdx], direction);
+                            const Ray ray(eyePos, direction);
 
                             L += scene.trace(ray, rng, 0, false);
                         }
-                        L = L / nSamples;
+                        L = L / Options::nrSamples;
 
                         tempPlane[y][z] += L * 0.25;
                     }
@@ -69,6 +68,8 @@ namespace rays {
         auto height = plane.size();
         auto width = plane[0].size();
 
+        std::string name = filename + ".png";
+
         std::vector<unsigned char> outImg(width * height * 3);
 
         double maxVal = getMaxPixelColorVal();
@@ -83,9 +84,9 @@ namespace rays {
             }
         }
 
-        if (stbi_write_png(filename.data(), static_cast<int>(width), static_cast<int>(height), 3, outImg.data(),
+        if (stbi_write_png(name.data(), static_cast<int>(width), static_cast<int>(height), 3, outImg.data(),
                            static_cast<int>(width * 3))) {
-            std::cout << "Output written to out.png" << std::endl;
+            std::cout << "Output written to " << name << std::endl;
         } else {
             std::cerr << "Failed to write file!" << std::endl;
         }
@@ -113,5 +114,30 @@ namespace rays {
         return maxVal;
     }
 
+    void Camera::createRawImage(const std::string &filename) const {
+        auto height = plane.size();
+        auto width = plane[0].size();
 
+        std::string name = filename + ".hdr";
+
+        std::vector<float> outImg(width * height * 3);
+
+        for (unsigned int i = 0; i < plane.size(); i++) {
+            for (unsigned int j = 0; j < plane[0].size(); j++) {
+                ColorDbl clamped = clamp(plane[i][j], 0.0, 1.0);
+                outImg[3 * (width * j + i) + 0] = static_cast<float>(clamped.r);
+                outImg[3 * (width * j + i) + 1] = static_cast<float>(clamped.g);
+                outImg[3 * (width * j + i) + 2] = static_cast<float>(clamped.b);
+            }
+        }
+
+        if (stbi_write_hdr(name.data(), static_cast<int>(width), static_cast<int>(height), 3, outImg.data())) {
+            std::cout << "Output written to " << name << std::endl;
+        } else {
+            std::cerr << "Failed to write file!" << std::endl;
+
+        }
+
+
+    }
 }

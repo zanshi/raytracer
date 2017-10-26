@@ -18,13 +18,12 @@ namespace rays {
                        std::vector<std::shared_ptr<AreaLight>> l)
                 : objects{std::move(s)}, lights{std::move(l)} {}
 
-        ColorDbl trace(const Ray& ray, RNG& rng, int depth, bool specularReflection) const;
+        ColorDbl trace(const Ray &ray, RNG &rng, int depth, bool specularReflection) const;
+
         bool intersect(const Ray &ray, IntersectionInfo *isect) const;
 
         const std::vector<SceneObject> objects;
         const std::vector<std::shared_ptr<AreaLight>> lights{nullptr};
-
-        const int maxDepth = 7;
 
     };
 }

@@ -17,7 +17,7 @@ namespace rays {
         BSDF_TRANSPARENT // Glass etc
     };
 
-    const float AIR_INDEX = 1.0f;
+    constexpr float AIR_INDEX = 1.0f;
 
     inline void coordinateSystem(const glm::vec3 &v1, glm::vec3 *v2,
                                  glm::vec3 *v3) {
@@ -25,11 +25,11 @@ namespace rays {
             *v2 = glm::vec3(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
         else
             *v2 = glm::vec3(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
-        *v3 = cross(v1,*v2);
+        *v3 = cross(v1, *v2);
     }
 
     inline float absDot(const glm::vec3 &v0, const glm::vec3 &v1) {
-        return std::abs(glm::dot(v0, v1));
+        return glm::abs(glm::dot(v0, v1));
     }
 
     inline float cosTheta(const glm::vec3 &v) {
@@ -70,18 +70,18 @@ namespace rays {
     inline float Sin2Phi(const glm::vec3 &w) { return SinPhi(w) * SinPhi(w); }
 
     inline glm::vec3 reflect(const glm::vec3 &wo, const glm::vec3 &n) {
-        return wo - 2 * glm::dot(n,wo) * n;
+        return wo - 2.0f * glm::dot(n, wo) * n;
     }
 
     inline bool refract(glm::vec3 *wt, const glm::vec3 &wi, const glm::vec3 &n, float invEta) {
 
-        float cosThetaI = clamp(glm::dot(n,wi), -1.0f, 1.0f);
+        const float cosThetaI = glm::clamp(glm::dot(n, wi), -1.0f, 1.0f);
 
 
-        float k = 1 - invEta * invEta * (1 - cosThetaI * cosThetaI);
-        if (k < 0) { return false; }
+        const float k = 1.0f - invEta * invEta * (1 - cosThetaI * cosThetaI);
+        if (k < 0.0f) { return false; }
 
-        *wt = glm::normalize(invEta * wi + (invEta * cosThetaI - std::sqrt(k)) * n);
+        *wt = glm::normalize(invEta * wi + (-invEta * cosThetaI - glm::sqrt(k)) * n);
 
         return true;
 
@@ -110,21 +110,24 @@ namespace rays {
         float etaMinus = eta - 1;
         float etaPlus = eta + 1;
 
-        float R0 = (etaMinus * etaMinus ) / (etaPlus * etaPlus);
+        float R0 = (etaMinus * etaMinus) / (etaPlus * etaPlus);
 
-        return R0 + (1.0f - R0) * std::pow(1.0f - cosThetaI, 5.0f);
+        return R0 + (1.0f - R0) * glm::pow(1.0f - cosThetaI, 5.0f);
 
     }
 
+    inline glm::vec3 sphericalToCartesian(float theta, float phi) {
+        return glm::vec3{theta * glm::sin(phi), theta * glm::cos(phi), glm::sqrt(1 - theta * theta)};
+    }
 
     inline glm::vec3 worldToLocal(const glm::vec3 &ss, const glm::vec3 &ts, const glm::vec3 &ns, const glm::vec3 &v) {
-        return glm::vec3(dot(v,ss), dot(v,ts), dot(v,ns));
+        return glm::vec3(glm::dot(v, ss), glm::dot(v, ts), glm::dot(v, ns));
     }
 
     inline glm::vec3 localToWorld(const glm::vec3 &ss, const glm::vec3 &ts, const glm::vec3 &ns, const glm::vec3 &v) {
         return glm::vec3(ss.x * v.x + ts.x * v.y + ns.x * v.z,
-                        ss.y * v.x + ts.y * v.y + ns.y * v.z,
-                        ss.z * v.x + ts.z * v.y + ns.z * v.z);
+                         ss.y * v.x + ts.y * v.y + ns.y * v.z,
+                         ss.z * v.x + ts.z * v.y + ns.z * v.z);
     }
 
 
@@ -133,11 +136,7 @@ namespace rays {
 
         virtual ~BSDF() = default;
 
-        virtual ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const = 0;
-
-        virtual float pdf(const glm::vec3 &wi, const glm::vec3 &n) const {
-            return absDot(wi, n) * invPI; // pdf for Lambertian and Oren-Nayar
-        }
+        virtual ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const = 0;
 
         virtual BSDF_Type getType() const = 0;
 
@@ -151,7 +150,7 @@ namespace rays {
 
         ~Lambertian() override = default;
 
-        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
+        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R * invPI;
         }
 
@@ -169,13 +168,13 @@ namespace rays {
 
         ~OrenNayar() override = default;
 
-        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
-            float sinThetaI = SinTheta(*wi);
+        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+            float sinThetaI = SinTheta(wi);
             float sinThetaO = SinTheta(wo);
             // Compute cosine term of Oren-Nayar model
             float maxCos = 0;
             if (sinThetaI > 1e-4 && sinThetaO > 1e-4) {
-                float sinPhiI = SinPhi(*wi), cosPhiI = CosPhi(*wi);
+                float sinPhiI = SinPhi(wi), cosPhiI = CosPhi(wi);
                 float sinPhiO = SinPhi(wo), cosPhiO = CosPhi(wo);
                 float dCos = cosPhiI * cosPhiO + sinPhiI * sinPhiO;
                 maxCos = std::max((float) 0, dCos);
@@ -183,9 +182,9 @@ namespace rays {
 
             // Compute sine and tangent terms of Oren-Nayar model
             float sinAlpha, tanBeta;
-            if (absCosTheta(*wi) > absCosTheta(wo)) {
+            if (absCosTheta(wi) > absCosTheta(wo)) {
                 sinAlpha = sinThetaO;
-                tanBeta = sinThetaI / absCosTheta(*wi);
+                tanBeta = sinThetaI / absCosTheta(wi);
             } else {
                 sinAlpha = sinThetaI;
                 tanBeta = sinThetaO / absCosTheta(wo);
@@ -197,7 +196,7 @@ namespace rays {
             return BSDF_Type::BSDF_DIFFUSE;
         }
 
-        float A, B;
+        const float A, B;
 
     };
 
@@ -206,7 +205,7 @@ namespace rays {
 
         ~Glass() override = default;
 
-        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
+        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R;
         }
 
@@ -221,7 +220,7 @@ namespace rays {
 
         ~Mirror() override = default;
 
-        ColorDbl fr(glm::vec3 *wi, const glm::vec3 &wo) const override {
+        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R;
         }
 

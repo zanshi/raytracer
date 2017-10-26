@@ -52,11 +52,12 @@ namespace rays {
 
 
     // Useful constants
-    constexpr const float PI = 3.14159265359f;
-    constexpr const float invPI = 1.0f / PI;
+    constexpr float PI = 3.1415926535897932384626433832795f;
+    constexpr float PIx2 = PI * 2;
+    constexpr float invPI = 1 / PI;
 
 
-	constexpr const float P = 0.75f;
+	constexpr float P = 0.75f;
 	constexpr float invP = 1 / P;
 
     // Utility functions
@@ -67,6 +68,7 @@ namespace rays {
     inline int sgn(T val) {
         return (T(0) < val) - (val < T(0));
     }
+
 
 
 

@@ -21,7 +21,7 @@ set(SOURCES
         src/scene.cpp
         src/triangle.cpp
         src/vector.h
-        src/trianglemesh.cpp src/sphere.cpp src/sceneobject.cpp)
+        src/trianglemesh.cpp src/sphere.cpp src/sceneobject.cpp src/scenebuilder.cpp src/scenebuilder.h)
 set(HEADERS
         src/common.h
         src/camera.h
@@ -31,7 +31,7 @@ set(HEADERS
         src/colordbl.h
         src/trianglemesh.h
         src/shape.h
-        src/sphere.h src/sceneobject.h src/material.h src/light.h src/point_light.h src/area_light.h src/bsdf.h src/intersectioninfo.h src/rng.h)
+        src/sphere.h src/sceneobject.h src/material.h src/light.h src/point_light.h src/area_light.h src/bsdf.h src/intersectioninfo.h src/rng.h src/options.h src/scenebuilder.cpp src/scenebuilder.h)
 
 include_directories(src)
 include_directories(vendor)

@@ -11,16 +11,18 @@
 namespace rays {
     struct Ray {
 
-        // start -> end = (end - origin) forms a direction
-        // many rays spawn from the same start vertex -> use ref/ptr
-        // the end vertex is the start vertex for new rays -> ref/ptr
-        // save 3 * 8 - 8 = 16 bytes
+        explicit Ray(const glm::vec3 &o, const glm::vec3 &d) : o(o), d(d) {}
 
-        explicit Ray(const glm::vec3 &o, const glm::vec3 &d) : o(o), d(d), tMax(std::numeric_limits<float>::max()) {}
-
-        const glm::vec3 o{0, 0, 0}; // origin
+        const glm::vec3 o; // origin
         const glm::vec3 d;
-        mutable float tMax;
+        mutable float tMax = std::numeric_limits<float>::max();
     };
+
+
+    inline std::ostream& operator<<(std::ostream& os, const Ray& r) {
+        os << "Position: (" << r.o.x << ", " << r.o.y << ", " << r.o.z << "), "
+                << "Direction: (" << r.d.x << ", " << r.d.y << ", " << r.d.z << ")";
+        return os;
+    }
 }
 #endif //RAYTRACER_RAY_H

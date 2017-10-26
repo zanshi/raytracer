@@ -20,7 +20,7 @@ namespace rays {
 
         float area() const override;
 
-        glm::vec3 getRandomPoint(RNG &rng) const override;
+        glm::vec3 getRandomPoint(glm::vec2 r2) const override;
 
     private:
         const glm::vec3 center;

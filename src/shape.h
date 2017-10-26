@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "colordbl.h"
+#include <glm/vec2.hpp>
 
 namespace rays {
 
@@ -16,7 +17,7 @@ namespace rays {
 
         virtual bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const = 0;
 
-        virtual glm::vec3 getRandomPoint(RNG &rng) const = 0;
+        virtual glm::vec3 getRandomPoint(glm::vec2 r2) const = 0;
 
         virtual float area() const = 0;
 

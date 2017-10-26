@@ -14,19 +14,21 @@ namespace rays {
 
         const glm::vec3 d = ray.d;
         const glm::vec3 L = ray.o - center;
-        const float a = dot(d, d);
-        const float b = 2.0f * (dot(d,L));
-        const float c = dot(L, L) - (r * r);
+        const float a = glm::dot(d, d);
+        const float b = 2.0f * (glm::dot(d,L));
+        const float c = glm::dot(L, L) - (r * r);
 
 //        const float discrim = std::pow((b / 2.0f), 2) - a * c;
         const auto discrim = b * b - 4 * a * c;
 
-        if (discrim < 0) {
+        const float epsilon = 1e-5;
+
+        if (discrim < -epsilon) {
             return false;
-        } else if (discrim == 0) {
+        } else if (discrim < epsilon && discrim > -epsilon) {
             t0 = t1 = -0.5f * b / a;
         } else {
-            const float rootDiscrim = std::sqrt(discrim);
+            const float rootDiscrim = glm::sqrt(discrim);
             float q = (b > 0) ?
                       -0.5f * (b + rootDiscrim) :
                       -0.5f * (b - rootDiscrim);
@@ -40,7 +42,7 @@ namespace rays {
             t0 = temp;
         }
 
-        if (t0 < 0) {
+        if (t0 < -epsilon) {
             t0 = t1; // if t0 is negative, let's use t1 instead
             if (t0 < 0) return false; // both t0 and t1 are negative
         }
@@ -75,7 +77,7 @@ namespace rays {
         return true;
     }
 
-    glm::vec3 Sphere::getRandomPoint(RNG &rng) const {
+    glm::vec3 Sphere::getRandomPoint(glm::vec2 r2) const {
         return glm::vec3(); // not necessary
     }
 

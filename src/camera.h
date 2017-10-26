@@ -7,6 +7,8 @@
 
 #include "common.h"
 #include "rng.h"
+#include "options.h"
+#include "colordbl.h"
 
 
 namespace rays {
@@ -17,15 +19,14 @@ namespace rays {
         using CameraPlane = std::vector<std::vector<ColorDbl>>;
     public:
 
-        explicit Camera(std::vector<glm::vec3> eyes, unsigned int x, unsigned int y, unsigned int currEyeIdx,
-                        unsigned int nSamples)
-                : eyes(std::move(eyes)),
-                  plane(x, std::vector<ColorDbl>(y)),
-                  eyeIdx(currEyeIdx), nSamples(nSamples), dx(2.0f / x) {}
+        explicit Camera(std::array<glm::vec3, 2> cameraPositions) : eyePos(cameraPositions[Options::eyeIdx]),
+                                                                    plane(Options::width,
+                                                                          std::vector<ColorDbl>(Options::width)) {}
 
         void render(Scene scene);
 
         void createImage(const std::string &filename) const;
+        void createRawImage(const std::string &filename) const;
 
     private:
 
@@ -33,12 +34,9 @@ namespace rays {
 
         double getMaxPixelColorVal() const;
 
-        const std::vector<glm::vec3> eyes;
-        CameraPlane plane;
+        const glm::vec3 eyePos;
 
-        const unsigned int eyeIdx{0};
-        const unsigned int nSamples = 64;
-        const float dx{0.002f};
+        CameraPlane plane;
 
     };
 

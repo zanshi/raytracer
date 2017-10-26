@@ -5,6 +5,7 @@
 #include "triangle.h"
 #include "ray.h"
 #include "intersectioninfo.h"
+#include "options.h"
 #include <glm/gtc/matrix_inverse.hpp>
 
 namespace rays {
@@ -171,11 +172,11 @@ namespace rays {
         glm::vec4 tDir = T * glm::vec4(ray.d, 0);
 
         float t = -tO.z / tDir.z;
-        if (t < 0 || t > ray.tMax) return false;
+        if (t < -Options::epsilon || t > ray.tMax) return false;
         float u = tO.x + t * tDir.x;
-        if (u < 0) { return false; }
+        if (u < -Options::epsilon) { return false; }
         float v = tO.y + t * tDir.y;
-        if (v < 0 || u + v > 1) { return false; }
+        if (v < -Options::epsilon || u + v > 1) { return false; }
 
         *tHit = t;
         auto hitPoint = ray.o + t * ray.d;
@@ -191,7 +192,7 @@ namespace rays {
         return 0.5f * (glm::cross((V[1] - V[0]), (V[2] - V[0]))).length();
     }
 
-    glm::vec3 Triangle::getRandomPoint(RNG &rng) const {
+    glm::vec3 Triangle::getRandomPoint(glm::vec2 r2) const {
 //        float u, v;
 //        do {
 //            u = rng.getUniform1D();
@@ -201,14 +202,13 @@ namespace rays {
 //        return (1 - u - v) * V[0] + u * V[1] + v * V[2];
 
         // pbrt
-
-        glm::vec2 r = rng.getUniform2D();
-        float su0 = glm::sqrt(r[0]);
+        float su0 = glm::sqrt(r2[0]);
 
         float u = 1 - su0;
-        float v = r[1] * su0;
+        float v = r2[1] * su0;
 
-        return (1 - u - v) * V[0] + u * V[1] + v * V[2];
+        return u * V[0] + v * V[1] + (1 - u - v) * V[2];
+//        return (1 - u - v) * V[0] + u * V[1] + v * V[2];
 
     }
 

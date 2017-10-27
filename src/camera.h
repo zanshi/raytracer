@@ -9,6 +9,7 @@
 #include "rng.h"
 #include "options.h"
 #include "colordbl.h"
+#include "scene.h"
 
 
 namespace rays {
@@ -19,9 +20,9 @@ namespace rays {
         using CameraPlane = std::vector<std::vector<ColorDbl>>;
     public:
 
-        explicit Camera(std::array<glm::vec3, 2> cameraPositions) : eyePos(cameraPositions[Options::eyeIdx]),
-                                                                    plane(Options::width,
-                                                                          std::vector<ColorDbl>(Options::width)) {}
+        explicit Camera(std::array<glm::vec3, 2> cameraPositions) : eyePos(cameraPositions[options::eyeIdx]),
+                                                                    plane(options::width,
+                                                                          std::vector<ColorDbl>(options::width)) {}
 
         void render(Scene scene);
 

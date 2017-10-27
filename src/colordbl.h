@@ -31,7 +31,7 @@ namespace rays {
         }
 
         ColorDbl operator*(const ColorDbl &rhs) const {
-            return ColorDbl(r * rhs.r, g * rhs.g, b * rhs.b);
+            return {r * rhs.r, g * rhs.g, b * rhs.b};
         }
 
 
@@ -44,7 +44,7 @@ namespace rays {
         }
 
         ColorDbl operator+(const ColorDbl &v) const {
-            return ColorDbl(r + v.r, g + v.g, b + v.b);
+            return {r + v.r, g + v.g, b + v.b};
         }
 
         // Subtraction
@@ -56,7 +56,7 @@ namespace rays {
         }
 
         ColorDbl operator-(const ColorDbl &v) const {
-            return ColorDbl(r - v.r, g - v.g, b - v.b);
+            return {r - v.r, g - v.g, b - v.b};
         }
 
         // Division

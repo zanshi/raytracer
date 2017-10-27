@@ -6,10 +6,9 @@
 #define RAYTRACER_TRIANGLE_H
 
 #include "common.h"
-#include "trianglemesh.h"
 #include "shape.h"
 #include "rng.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 
 namespace rays {
 
@@ -30,11 +29,11 @@ namespace rays {
 
     private:
 
-        glm::mat4 calculateAffineTransformation();
+        glm::mat3 calculateAffineTransformation();
 
         const std::array<glm::vec3, 3> V;
         const glm::vec3 normal;
-        const glm::mat4 T;
+        const glm::mat3 T;
 
     };
 }

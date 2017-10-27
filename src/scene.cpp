@@ -14,7 +14,7 @@ namespace rays {
 
         ColorDbl L{0.0, 0.0, 0.0};
 
-        if (depth == Options::maxDepth) {
+        if (depth == options::maxDepth) {
 //            std::cout << "Max depth reached. L = " << L << std::endl;
             return L;
         }
@@ -91,7 +91,7 @@ namespace rays {
             AreaLight *l = lights[lightSourceIdx].get();
             Shape *tri = l->T.get();
             ColorDbl Ld{0, 0, 0};
-            for (unsigned int i = 0; i < Options::nrLightSamples; i++) {
+            for (unsigned int i = 0; i < options::nrLightSamples; i++) {
                 const glm::vec2 r2 = rng.getUniform2D();
                 const glm::vec3 q = tri->getRandomPoint(r2); // random point on the triangle
                 const glm::vec3 wiWorld = glm::normalize(q - hitPoint);
@@ -109,7 +109,7 @@ namespace rays {
                     Ld += f * G;
                 }
             }
-            L += static_cast<float>(nLights) / static_cast<float>(Options::nrLightSamples) * l->area * l->L0 * l->intensity * Ld;
+            L += static_cast<float>(nLights) / static_cast<float>(options::nrLightSamples) * l->area * l->L0 * l->intensity * Ld;
 
 
             float theta = glm::sqrt(rng.getUniform1D());

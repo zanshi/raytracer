@@ -37,8 +37,8 @@ int main() {
     // Save an image to out.png
     std::stringstream ss;
     ss << "out-";
-    ss << Options::width << "x" << Options::width << "-";
-    ss << Options::nrSamples;
+    ss << options::width << "x" << options::width << "-";
+    ss << options::nrSamples;
 
     camera.createImage(ss.str());
     camera.createRawImage(ss.str());

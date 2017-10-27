@@ -6,7 +6,7 @@
 #define RAYTRACER_BSDF_H
 
 #include "colordbl.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 
 namespace rays {
 
@@ -16,8 +16,6 @@ namespace rays {
         BSDF_SPECULAR,  // For mirrors?
         BSDF_TRANSPARENT // Glass etc
     };
-
-    constexpr float AIR_INDEX = 1.0f;
 
     inline void coordinateSystem(const glm::vec3 &v1, glm::vec3 *v2,
                                  glm::vec3 *v3) {
@@ -49,12 +47,6 @@ namespace rays {
 
     inline float SinTheta(const glm::vec3 &w) { return std::sqrt(Sin2Theta(w)); }
 
-    inline float TanTheta(const glm::vec3 &w) { return SinTheta(w) / cosTheta(w); }
-
-    inline float Tan2Theta(const glm::vec3 &w) {
-        return Sin2Theta(w) / Cos2Theta(w);
-    }
-
     inline float CosPhi(const glm::vec3 &w) {
         float sinTheta = SinTheta(w);
         return (sinTheta == 0) ? 1 : clamp(w.x / sinTheta, -1.f, 1.f);
@@ -64,10 +56,6 @@ namespace rays {
         float sinTheta = SinTheta(w);
         return (sinTheta == 0) ? 0 : clamp(w.y / sinTheta, -1.f, 1.f);
     }
-
-    inline float Cos2Phi(const glm::vec3 &w) { return CosPhi(w) * CosPhi(w); }
-
-    inline float Sin2Phi(const glm::vec3 &w) { return SinPhi(w) * SinPhi(w); }
 
     inline glm::vec3 reflect(const glm::vec3 &wo, const glm::vec3 &n) {
         return wo - 2.0f * glm::dot(n, wo) * n;
@@ -89,23 +77,6 @@ namespace rays {
 
     // Calculate Dielectric-Dielectric reflection coefficient
     inline float fresnel(float cosThetaI, float eta) {
-//        cosThetaI = clamp(cosThetaI, -1.0f, 1.0f);
-//        float n1 = AIR_INDEX;
-//        float n2 = index;
-//
-//        if (cosThetaI > 0) { std::swap(n1, n2); }
-//
-//        float sinThetaI = std::sqrt(std::max(0.0f, 1 - cosThetaI * cosThetaI));
-//        float sinThetaT = n1 / n2 * sinThetaI;
-//
-//        // Handle total internal reflection
-//        if (sinThetaT >= 1) return 1;
-//        float cosThetaT = std::sqrt(std::max(0.0f, 1 - sinThetaT * sinThetaT));
-//        cosThetaI = std::abs(cosThetaI);
-//        float Rs = ((n2 * cosThetaI) - (n1 * cosThetaT)) / ((n2 * cosThetaI) + (n1 * cosThetaT));
-//        float Rp = ((n1 * cosThetaI) - (n2 * cosThetaT)) / ((n1 * cosThetaI) + (n2 * cosThetaT));
-//        return (Rs * Rs + Rp * Rp) / 2;
-
         // Schlick
         float etaMinus = eta - 1;
         float etaPlus = eta + 1;

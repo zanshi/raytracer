@@ -7,7 +7,7 @@
 
 #include "common.h"
 #include "shape.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 
 namespace rays {
     class Sphere final : public Shape {

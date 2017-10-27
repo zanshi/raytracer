@@ -7,7 +7,7 @@
 
 #include <chrono>
 #include "common.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 
 namespace rays {
 

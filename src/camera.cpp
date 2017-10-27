@@ -18,7 +18,7 @@ namespace rays {
         // Loop over each pixel
         // Tile this later
         const float offset = 1.0f - 1.0f / plane.size();
-        const int width = Options::width;
+        const int width = options::width;
         const int height = width;
 
         CameraPlane tempPlane = plane;
@@ -31,7 +31,7 @@ namespace rays {
 
                 for (int sy = 0; sy < 2; sy++) {
                     for (int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
-                        for (unsigned int k = 0; k < Options::nrSamples; k++) {
+                        for (unsigned int k = 0; k < options::nrSamples; k++) {
 
                             // Determine position on camera plane
                             float r1 = 2 * rng.getUniform1D();
@@ -44,14 +44,14 @@ namespace rays {
 
 //                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
                             auto direction = glm::normalize(
-                                    glm::vec3{0, offY * Options::dx - offset, offset - offZ * Options::dx} - eyePos);
+                                    glm::vec3{0, offY * options::dx - offset, offset - offZ * options::dx} - eyePos);
 
                             // Create eye -> camera plane ray
                             const Ray ray(eyePos, direction);
 
                             L += scene.trace(ray, rng, 0, false);
                         }
-                        L = L / Options::nrSamples;
+                        L = L / options::nrSamples;
 
                         tempPlane[y][z] += L * 0.25;
                     }

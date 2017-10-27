@@ -16,7 +16,6 @@ namespace rays {
 
     public:
         virtual ~Light() = default;
-        // We use point lights -> only need position
         ColorDbl L0;
         float intensity;
     };

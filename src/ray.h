@@ -6,7 +6,7 @@
 #define RAYTRACER_RAY_H
 
 #include "common.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 
 namespace rays {
     struct Ray {

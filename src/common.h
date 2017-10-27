@@ -29,6 +29,7 @@ namespace rays {
     // Global forward declarations (reduces compilation times)
     class Camera;
     class Scene;
+    class SceneBuilder;
     class RNG;
 
     class SceneObject;

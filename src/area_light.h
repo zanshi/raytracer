@@ -20,7 +20,7 @@ namespace rays {
         ~AreaLight() override = default;
 
         const std::shared_ptr<Shape> T;
-        const float area{};
+        const float area;
 
     };
 

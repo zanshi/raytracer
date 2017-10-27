@@ -5,10 +5,8 @@
 #include "common.h"
 #include "scenebuilder.h"
 #include "sceneobject.h"
-#include "shape.h"
 #include "triangle.h"
 #include "sphere.h"
-#include "bsdf.h"
 #include "scene.h"
 
 namespace rays {
@@ -156,8 +154,8 @@ namespace rays {
         const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
         const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
 
-        ColorDbl white{1.0, 1.0, 1.0};
-        float intensity = 30;
+        ColorDbl white{1.0, 0.95, 0.95};
+        float intensity = 15.0f;
 
         const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(white);
 

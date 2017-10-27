@@ -6,7 +6,7 @@
 #define RAYTRACER_INTERSECTIONINFO_H
 
 #include "common.h"
-#include "vector.h"
+#include <glm/glm.hpp>
 #include "bsdf.h"
 #include "shape.h"
 #include "sceneobject.h"

@@ -3,10 +3,10 @@ project(raytracer)
 
 set(CMAKE_CXX_STANDARD 14)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wpedantic -Wall -Wextra -Wconversion")
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pedantic -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pedantic -Wall -Wextra -march=native -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 
 
 FIND_PACKAGE(OpenMP REQUIRED)

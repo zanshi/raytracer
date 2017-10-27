@@ -101,7 +101,7 @@ namespace rays {
                     // No occlusion! Add contribution from this ray
                     const glm::vec3 wi = glm::normalize(worldToLocal(ss, ts, n, wiWorld));
                     const glm::vec3 shadowN = shadowIsect.n;
-                    const ColorDbl f = isect.brdf->fr(wi, wo);
+                    const ColorDbl f = shadowIsect.brdf->fr(wi, wo);
 
                     // Calculate geometric term
                     float G = glm::abs((glm::dot(shadowIsect.wo, shadowN) * glm::dot(wiWorld, n))) /
@@ -109,7 +109,7 @@ namespace rays {
                     Ld += f * G;
                 }
             }
-            L += (nLights * PI / Options::nrLightSamples) * l->area * l->L0 * l->intensity * Ld;
+            L += static_cast<float>(nLights) / static_cast<float>(Options::nrLightSamples) * l->area * l->L0 * l->intensity * Ld;
 
 
             float theta = glm::sqrt(rng.getUniform1D());

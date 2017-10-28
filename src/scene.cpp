@@ -32,9 +32,15 @@ namespace rays {
         // Add contribution from light and terminate.
         // We only care about the first bounce and specular reflections
         if (auto &&l = isect.obj->getAreaLight()) {
-            if (depth == 0 || specularBounce) {
+//            if (depth == 0 || specularBounce) {
+            if (depth == 0) {
                 L += l->L0 * l->intensity;
+
             }
+//            glm::vec3 wi, wo;
+//                L += l->L0 * l->intensity * isect.brdf->fr(wi, wo);
+//            L += l->L0 * l->intensity;
+//            }
             return L;
 //            return l->L0;
         }
@@ -100,24 +106,33 @@ namespace rays {
                 if (intersect(shadowRay, &shadowIsect) && shadowIsect.shape == tri) {
                     // No occlusion! Add contribution from this ray
                     const glm::vec3 wi = glm::normalize(worldToLocal(ss, ts, n, wiWorld));
-                    const glm::vec3 shadowN = shadowIsect.n;
-                    const ColorDbl f = shadowIsect.brdf->fr(wi, wo);
+                    glm::vec3 shadowN = shadowIsect.n;
+                    const ColorDbl f = isect.brdf->fr(wi, wo);
 
                     // Calculate geometric term
-                    float G = glm::abs((glm::dot(shadowIsect.wo, shadowN) * glm::dot(wiWorld, n))) /
-                              glm::distance2(q, hitPoint);
-                    Ld += f * G;
+                    auto cosLightAngle = glm::dot(shadowN, -wiWorld);
+                    auto lightSolidAngle =
+                            l->area / static_cast<float>(options::nrLightSamples) *
+                            glm::clamp(cosLightAngle, 0.0f, 1.0f)
+                            / glm::distance2(q, hitPoint);
+                    auto costheta = glm::dot(wiWorld, n);
+                    Ld += f * l->L0 * l->intensity * costheta * lightSolidAngle;
                 }
             }
-            L += static_cast<float>(nLights) / static_cast<float>(options::nrLightSamples) * l->area * l->L0 * l->intensity * Ld;
+//            L += static_cast<float>(nLights) / static_cast<float>(options::nrLightSamples) * l->area * Ld;
+            L += static_cast<float>(nLights) * Ld;
 
 
             float theta = glm::sqrt(rng.getUniform1D());
+//            float theta = glm::acos(glm::sqrt(rng.getUniform1D()));
+
+//            const glm::vec3 wi = glm::normalize(glm::vec3{cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)});
             const glm::vec3 wi = glm::normalize(sphericalToCartesian(theta, phi));
             const glm::vec3 wiWorld = glm::normalize(localToWorld(ss, ts, n, wi));
 
             const Ray newRay(hitPoint + n * epsilon, wiWorld);
             return L + (PI * trace(newRay, rng, depth + 1, specularBounce) * isect.brdf->fr(wi, wo)) * invP;
+//            return isect.brdf->fr(wi, wo) * (L + trace(newRay, rng, depth + 1, specularBounce)) * invP;
 
         } else if (isect.brdf->getType() == BSDF_SPECULAR) {
 
@@ -185,6 +200,17 @@ namespace rays {
         for (auto &&o : objects) {
             if (o.intersect(ray, isect)) {
                 hit = true;
+            }
+        }
+
+        return hit;
+    }
+
+    bool Scene::intersectShadow(const Ray &ray, IntersectionInfo *isect) const {
+        bool hit = false;
+        for (auto &&o : objects) {
+            if (o.bsdf->getType() != BSDF_TRANSPARENT) {
+                if (o.intersect(ray, isect)) { hit = true; }
             }
         }
 

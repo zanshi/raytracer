@@ -38,7 +38,8 @@ int main() {
     std::stringstream ss;
     ss << "out-";
     ss << options::width << "x" << options::width << "-";
-    ss << options::nrSamples;
+    ss << options::nrSamples << "-";
+    ss << totalTime.count() << "s";
 
     camera.createImage(ss.str());
     camera.createRawImage(ss.str());

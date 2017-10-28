@@ -39,8 +39,8 @@ namespace rays {
                             float offY = r1 < 1 ? glm::sqrt(r1) - 1 : 1 - glm::sqrt(2 - r1);
                             float offZ = r2 < 1 ? glm::sqrt(r2) - 1 : 1 - glm::sqrt(2 - r2);
 
-                            offY = (sy + 0.5f + offY) / 2 + y;
-                            offZ = (sz + 0.5f + offZ) / 2 + z;
+                            offY = (sy + 0.5f + offY) / 2.0f + y;
+                            offZ = (sz + 0.5f + offZ) / 2.0f + z;
 
 //                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
                             auto direction = glm::normalize(
@@ -124,7 +124,8 @@ namespace rays {
 
         for (unsigned int i = 0; i < plane.size(); i++) {
             for (unsigned int j = 0; j < plane[0].size(); j++) {
-                ColorDbl clamped = clamp(plane[i][j], 0.0, 1.0);
+//                ColorDbl clamped = clamp(plane[i][j], 0.0, 1.0);
+                ColorDbl clamped = plane[i][j];
                 outImg[3 * (width * j + i) + 0] = static_cast<float>(clamped.r);
                 outImg[3 * (width * j + i) + 1] = static_cast<float>(clamped.g);
                 outImg[3 * (width * j + i) + 2] = static_cast<float>(clamped.b);

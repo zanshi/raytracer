@@ -18,40 +18,6 @@ namespace rays {
         auto v1 = V[1];
         auto v2 = V[2];
 //
-//        glm::vec3 edge1, edge2, h, s, q;
-//        float a,f,u,v;
-//        edge1 = v1 - v0;
-//        edge2 = v2 - v0;
-//        h = cross(ray.d,edge2);
-//        a = dot(edge1, h);
-//        if (a > -EPSILON && a < EPSILON)
-//            return false;
-//        f = 1/a;
-//        s = ray.o - v0;
-//        u = f * (dot(s,h));
-//        if (u < 0.0 || u > 1.0)
-//            return false;
-//        q = cross(s, edge1);
-//        v = f * dot(ray.d, q);
-//        if (v < 0.0 || u + v > 1.0)
-//            return false;
-//        // At this stage we can compute t to find out where the intersection point is on the line.
-//        float t = f * dot(edge2, q);
-//        if (t > EPSILON && t < ray.tMax) // ray intersection
-//        {
-//        auto hitPoint = ray.o + t * ray.d;
-//            *isect = IntersectionInfo(hitPoint, -ray.d, normal, this);
-//
-//            return true;
-//        }
-//        else // This means that there is a line intersection but not a ray intersection.
-//            return false;
-
-
-//        const auto &v0 = getV0();
-//        const auto &v1 = getV1();
-//        const auto &v2 = getV2();
-
 //        const auto e1 = v1 - v0;
 //        const auto e2 = v2 - v0;
 //        const auto dir = ray.d;

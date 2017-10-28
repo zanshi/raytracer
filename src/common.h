@@ -55,11 +55,11 @@ namespace rays {
     // Useful constants
     constexpr float PI = 3.1415926535897932384626433832795f;
     constexpr float PIx2 = PI * 2;
-    constexpr float invPI = 1 / PI;
+    constexpr float invPI = 1.0f / PI;
 
 
-	constexpr float P = 0.75f;
-	constexpr float invP = 1 / P;
+	constexpr float P = 0.9f;
+	constexpr float invP = 1.0f / P;
 
     // Utility functions
     template<typename T>

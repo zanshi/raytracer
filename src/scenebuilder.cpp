@@ -79,7 +79,8 @@ namespace rays {
 
         std::vector<SceneObject> objects;
 
-//        auto light0 = std::make_shared<AreaLight>(AreaLight(white, t14, 6));
+//        auto light0 = std::make_shared<AreaLight>(AreaLight(white, t18, 30));
+//        auto light1 = std::make_shared<AreaLight>(AreaLight(white, t19, 30));
 
         objects.emplace_back(t0, surface_white);
         objects.emplace_back(t1, surface_white);
@@ -116,7 +117,7 @@ namespace rays {
         std::vector<SceneObject> tetrahedron;
 
         // Define vertices
-        glm::vec3 v0{6.0f, 4.8f, -4.0f};
+        glm::vec3 v0{7.0f, 4.0f, -4.0f};
         glm::vec3 v1{6.0f, -4.8f, -4.0f};
         glm::vec3 v2{3.6f, -1.3f, -1.7f};
         glm::vec3 v3{5.5f, -1.0f, 0.0f};
@@ -128,8 +129,9 @@ namespace rays {
         const std::shared_ptr<Shape> t3 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
 
         // Define surface
-        const ColorDbl white{0.8, 0.8, 0.8};
-        const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(white, 0.3f);
+        const ColorDbl colour{0.75, 0.75, 0.25};
+//        const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(white, 0.3f);
+        const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(colour);
 
         // Create and add scene objects
         tetrahedron.emplace_back(t0, surface);
@@ -146,16 +148,16 @@ namespace rays {
 
         std::vector<SceneObject> lightTriangles;
 
-        glm::vec3 v0{4.5f, 0.8f, 4.9999f};
-        glm::vec3 v1{5.0f, 0.8f, 4.9999f};
-        glm::vec3 v2{5.0f, -0.8f, 4.9999f};
-        glm::vec3 v3{4.5f, -0.8f, 4.9999f};
+        glm::vec3 v0{4.5f, 3.0f, 4.5f};
+        glm::vec3 v1{5.0f, 3.0f, 4.5f};
+        glm::vec3 v2{5.0f, -3.0f, 4.5f};
+        glm::vec3 v3{4.5f, -3.0f, 4.5f};
 
         const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
         const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
 
         ColorDbl white{1.0, 0.95, 0.95};
-        float intensity = 15.0f;
+        float intensity = 30.0f;
 
         const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(white);
 
@@ -176,20 +178,22 @@ namespace rays {
         std::vector<SceneObject> spheres;
         // Add a sphere
         ColorDbl red{0.8, 0.1, 0.1};
+        ColorDbl blue{0.25, 0.25, 0.75};
         ColorDbl white{1, 1, 1};
 
-        const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(white, 1.52f);
+//        const std::shared_ptr<BSDF> glass_material = std::make_shared<Lambertian>(white, 1.52f);
+        const std::shared_ptr<BSDF> glass_material = std::make_shared<Lambertian>(blue);
         const std::shared_ptr<BSDF> diffuse_material = std::make_shared<Lambertian>(red);
         const std::shared_ptr<BSDF> mirror_material = std::make_shared<Mirror>(red, 0.3f);
         auto sphere_glass =
-                SceneObject(std::make_shared<Sphere>(Sphere({5.0f, 3.0f, 0.0f}, 1.8f)), glass_material);
+                SceneObject(std::make_shared<Sphere>(Sphere({5.0f, 3.0f, 1.0f}, 1.8f)), glass_material);
         auto sphere_diffuse =
-                SceneObject(std::make_shared<Sphere>(Sphere({4.5f, -2.7f, 1.0f}, 1.5f)), diffuse_material);
+                SceneObject(std::make_shared<Sphere>(Sphere({4.5f, -2.7f, 2.0f}, 1.5f)), diffuse_material);
         auto sphere_mirror =
                 SceneObject(std::make_shared<Sphere>(Sphere({7.0f, 0.5f, 1.3f}, 1.7f)), mirror_material);
         spheres.push_back(sphere_glass);
         spheres.push_back(sphere_diffuse);
-        spheres.push_back(sphere_mirror);
+//        spheres.push_back(sphere_mirror);
 
         return spheres;
     }

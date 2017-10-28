@@ -21,6 +21,7 @@ namespace rays {
         ColorDbl trace(const Ray &ray, RNG &rng, int depth, bool specularReflection) const;
 
         bool intersect(const Ray &ray, IntersectionInfo *isect) const;
+        bool intersectShadow(const Ray &ray, IntersectionInfo *isect) const;
 
         const std::vector<SceneObject> objects;
         const std::vector<std::shared_ptr<AreaLight>> lights{nullptr};

@@ -16,8 +16,8 @@ namespace rays {
 
     public:
         virtual ~Light() = default;
-        ColorDbl L0;
-        float intensity;
+        const ColorDbl L0;
+        const float intensity;
     };
 }
 

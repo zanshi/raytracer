@@ -9,6 +9,14 @@
 #include <glm/glm.hpp>
 
 namespace rays {
+
+    struct RayPacket {
+        std::array<glm::vec3, 4> o;
+        std::array<glm::vec3, 4> d;
+        std::array<float, 4> tMax;
+    };
+
+
     struct Ray {
 
         explicit Ray(const glm::vec3 &o, const glm::vec3 &d) : o(o), d(d) {}
@@ -17,12 +25,8 @@ namespace rays {
         glm::vec3 d;
         mutable float tMax = std::numeric_limits<float>::max();
 
-        Ray &operator=(const Ray &r) {
-            o = r.o;
-            d = r.d;
-            tMax = r.tMax;
-            return *this;
-        }
+        Ray &operator=(const Ray &r) = default;
+        Ray &operator=(Ray &&r) = default;
 
     };
 

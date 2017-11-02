@@ -23,7 +23,7 @@ namespace rays {
 
         bool intersect(const Ray &ray, IntersectionInfo *isect, float *tHit) const override;
 
-        glm::vec3 getRandomPoint(glm::vec2 r2) const override;
+        glm::vec3 getRandomPoint(const glm::vec2 &r2) const override;
 
         float area() const override;
 

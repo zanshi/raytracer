@@ -88,13 +88,13 @@ namespace rays {
         return 0.5f * (glm::cross((V[1] - V[0]), (V[2] - V[0]))).length();
     }
 
-    glm::vec3 Triangle::getRandomPoint(glm::vec2 r2) const {
+    glm::vec3 Triangle::getRandomPoint(const glm::vec2 &r2) const {
 
         // pbrt
-        float su0 = glm::sqrt(r2[0]);
+        const float su0 = glm::sqrt(r2[0]);
 
-        float u = 1 - su0;
-        float v = r2[1] * su0;
+        const float u = 1 - su0;
+        const float v = r2[1] * su0;
 
         return u * V[0] + v * V[1] + (1 - u - v) * V[2];
     }

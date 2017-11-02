@@ -76,7 +76,7 @@ namespace rays {
         return true;
     }
 
-    glm::vec3 Sphere::getRandomPoint(glm::vec2 r2) const {
+    glm::vec3 Sphere::getRandomPoint(const glm::vec2& r2) const {
         return glm::vec3(); // not necessary
     }
 

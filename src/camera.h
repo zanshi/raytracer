@@ -20,24 +20,26 @@ namespace rays {
         using CameraPlane = std::vector<std::vector<ColorDbl>>;
     public:
 
-        explicit Camera(std::array<glm::vec3, 2> cameraPositions) : eyePos(cameraPositions[options::eyeIdx]),
-                                                                    plane(options::width,
-                                                                          std::vector<ColorDbl>(options::width)) {}
+        explicit Camera(std::array<glm::vec3, 2> cameraPositions)
+                : eyePos(cameraPositions[options::eyeIdx]) {}
 
         void render(Scene scene);
 
         void createImage(const std::string &filename) const;
+
         void createRawImage(const std::string &filename) const;
 
     private:
 
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
+        Ray createPrimaryRayPacket(int y, int z, RNG &rng) const;
+
         double getMaxPixelColorVal() const;
 
         const glm::vec3 eyePos;
 
-        CameraPlane plane;
+        std::array<ColorDbl, options::width * options::width> plane;
 
     };
 

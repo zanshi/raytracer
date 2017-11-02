@@ -20,9 +20,9 @@ namespace rays {
                                                                                                         n(n),
                                                                                                         shape(shape) {}
 
-        glm::vec3 p{};
-        glm::vec3 wo{};
-        glm::vec3 n{};
+        glm::vec3 p;
+        glm::vec3 wo;
+        glm::vec3 n;
         const Shape *shape = nullptr;
         const SceneObject *obj = nullptr;
         BSDF *brdf = nullptr;

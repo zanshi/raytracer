@@ -17,25 +17,25 @@ namespace rays {
     void Camera::render(Scene scene) {
         // Loop over each pixel
         // Tile this later
-        const float offset = 1.0f - 1.0f / plane.size();
-        const int width = options::width;
-        const int height = width;
-
-        CameraPlane tempPlane = plane;
+        constexpr float offset = 1.0f - 1.0f / options::width;
+        constexpr unsigned width = options::width;
+        constexpr unsigned height = width;
 
         RNG rng{};
-#pragma omp parallel for collapse(2) default(none) shared(tempPlane) firstprivate(scene) private(rng) schedule(dynamic, 16)
-        for (int y = 0; y < width; y++) {
-            for (int z = 0; z < height; z++) {
-                ColorDbl L = {0, 0, 0};
+#pragma omp parallel for collapse(2) default(none) shared(plane, scene) private(rng) schedule(dynamic, 16)
+        for (unsigned int y = 0; y < width; y++) {
+            for (unsigned int z = 0; z < height; z++) {
+                ColorDbl L{0, 0, 0};
 
-                for (int sy = 0; sy < 2; sy++) {
-                    for (int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
+                plane[y * options::width + z] = L;
+
+                for (unsigned int sy = 0; sy < 2; sy++) {
+                    for (unsigned int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
                         for (unsigned int k = 0; k < options::nrSamples; k++) {
 
                             // Determine position on camera plane
-                            float r1 = 2 * rng.getUniform1D();
-                            float r2 = 2 * rng.getUniform1D();
+                            const float r1 = 2 * rng.getUniform1D();
+                            const float r2 = 2 * rng.getUniform1D();
                             float offY = r1 < 1 ? glm::sqrt(r1) - 1 : 1 - glm::sqrt(2 - r1);
                             float offZ = r2 < 1 ? glm::sqrt(r2) - 1 : 1 - glm::sqrt(2 - r2);
 
@@ -43,7 +43,7 @@ namespace rays {
                             offZ = (sz + 0.5f + offZ) / 2.0f + z;
 
 //                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
-                            auto direction = glm::normalize(
+                            const auto direction = glm::normalize(
                                     glm::vec3{0, offY * options::dx - offset, offset - offZ * options::dx} - eyePos);
 
                             // Create eye -> camera plane ray
@@ -53,20 +53,18 @@ namespace rays {
                         }
                         L = L / options::nrSamples;
 
-                        tempPlane[y][z] += L * 0.25;
+                        plane[y * options::width + z] += L * 0.25;
                     }
                 }
 
             }
         }
-
-        plane = tempPlane;
     }
 
     void Camera::createImage(const std::string &filename) const {
 
-        auto height = plane.size();
-        auto width = plane[0].size();
+        auto height = options::width;
+        auto width = height;
 
         std::string name = filename + ".png";
 
@@ -75,9 +73,9 @@ namespace rays {
         double maxVal = getMaxPixelColorVal();
         std::cout << "Highest pixel value = " << maxVal << std::endl;
 
-        for (unsigned int i = 0; i < plane.size(); i++) {
-            for (unsigned int j = 0; j < plane[0].size(); j++) {
-                auto ldr = toneMap(plane[i][j], maxVal);
+        for (unsigned int i = 0; i < height; i++) {
+            for (unsigned int j = 0; j < width; j++) {
+                auto ldr = toneMap(plane[i * width + j], maxVal);
                 outImg[3 * (width * j + i) + 0] = ldr[0];
                 outImg[3 * (width * j + i) + 1] = ldr[1];
                 outImg[3 * (width * j + i) + 2] = ldr[2];
@@ -105,27 +103,24 @@ namespace rays {
 
     double Camera::getMaxPixelColorVal() const {
         double maxVal = std::numeric_limits<double>::min();
-        for (const auto &i : plane) {
-            for (unsigned int j = 0; j < plane[0].size(); j++) {
-                maxVal = i[j].maxColorVal(maxVal);
-            }
+        for (auto &&i : plane) {
+            maxVal = i.maxColorVal(maxVal);
         }
-
         return maxVal;
     }
 
     void Camera::createRawImage(const std::string &filename) const {
-        auto height = plane.size();
-        auto width = plane[0].size();
+        auto height = options::width;
+        auto width = height;
 
         std::string name = filename + ".hdr";
 
         std::vector<float> outImg(width * height * 3);
 
-        for (unsigned int i = 0; i < plane.size(); i++) {
-            for (unsigned int j = 0; j < plane[0].size(); j++) {
+        for (unsigned int i = 0; i < width; i++) {
+            for (unsigned int j = 0; j < height; j++) {
 //                ColorDbl clamped = clamp(plane[i][j], 0.0, 1.0);
-                ColorDbl clamped = plane[i][j];
+                ColorDbl clamped = plane[i * width + j];
                 outImg[3 * (width * j + i) + 0] = static_cast<float>(clamped.r);
                 outImg[3 * (width * j + i) + 1] = static_cast<float>(clamped.g);
                 outImg[3 * (width * j + i) + 2] = static_cast<float>(clamped.b);

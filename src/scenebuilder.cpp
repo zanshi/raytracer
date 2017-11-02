@@ -148,10 +148,10 @@ namespace rays {
 
         std::vector<SceneObject> lightTriangles;
 
-        glm::vec3 v0{4.5f, -3.0f, 4.5f};
-        glm::vec3 v1{5.0f, -3.0f, 4.5f};
-        glm::vec3 v2{5.0f, 3.0f, 4.5f};
-        glm::vec3 v3{4.5f, 3.0f, 4.5f};
+        glm::vec3 v0{4.0f, 3.0f, 4.5f};
+        glm::vec3 v1{5.0f, 3.0f, 4.5f};
+        glm::vec3 v2{5.0f, -3.0f, 4.5f};
+        glm::vec3 v3{4.0f, -3.0f, 4.5f};
 
         const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
         const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));

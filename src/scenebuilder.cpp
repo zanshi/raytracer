@@ -130,8 +130,8 @@ namespace rays {
 
         // Define surface
         const ColorDbl colour{0.75, 0.75, 0.25};
-//        const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(white, 0.3f);
-        const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(colour);
+        const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(colour, 0.3f);
+//        const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(colour);
 
         // Create and add scene objects
         tetrahedron.emplace_back(t0, surface);
@@ -148,10 +148,10 @@ namespace rays {
 
         std::vector<SceneObject> lightTriangles;
 
-        glm::vec3 v0{4.5f, 3.0f, 4.5f};
-        glm::vec3 v1{5.0f, 3.0f, 4.5f};
-        glm::vec3 v2{5.0f, -3.0f, 4.5f};
-        glm::vec3 v3{4.5f, -3.0f, 4.5f};
+        glm::vec3 v0{4.5f, -3.0f, 4.5f};
+        glm::vec3 v1{5.0f, -3.0f, 4.5f};
+        glm::vec3 v2{5.0f, 3.0f, 4.5f};
+        glm::vec3 v3{4.5f, 3.0f, 4.5f};
 
         const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
         const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
@@ -182,8 +182,8 @@ namespace rays {
         ColorDbl white{1, 1, 1};
 
 //        const std::shared_ptr<BSDF> glass_material = std::make_shared<Lambertian>(white, 1.52f);
-        const std::shared_ptr<BSDF> glass_material = std::make_shared<Lambertian>(blue);
-        const std::shared_ptr<BSDF> diffuse_material = std::make_shared<Lambertian>(red);
+        const std::shared_ptr<BSDF> glass_material = std::make_shared<Glass>(white, 1.52f);
+        const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(red, 0.3f);
         const std::shared_ptr<BSDF> mirror_material = std::make_shared<Mirror>(red, 0.3f);
         auto sphere_glass =
                 SceneObject(std::make_shared<Sphere>(Sphere({5.0f, 3.0f, 1.0f}, 1.8f)), glass_material);
@@ -193,7 +193,7 @@ namespace rays {
                 SceneObject(std::make_shared<Sphere>(Sphere({7.0f, 0.5f, 1.3f}, 1.7f)), mirror_material);
         spheres.push_back(sphere_glass);
         spheres.push_back(sphere_diffuse);
-//        spheres.push_back(sphere_mirror);
+        spheres.push_back(sphere_mirror);
 
         return spheres;
     }

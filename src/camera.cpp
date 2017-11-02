@@ -49,7 +49,7 @@ namespace rays {
                             // Create eye -> camera plane ray
                             const Ray ray(eyePos, direction);
 
-                            L += scene.trace(ray, rng, 0, false);
+                            L += scene.trace(ray, rng);
                         }
                         L = L / options::nrSamples;
 

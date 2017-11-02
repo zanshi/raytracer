@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(raytracer)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wpedantic -Wall -Wextra -Wconversion")
 
@@ -32,7 +32,8 @@ set(HEADERS
         src/sphere.h src/sceneobject.h src/light.h src/area_light.h src/bsdf.h src/intersectioninfo.h src/rng.h src/options.h src/scenebuilder.cpp src/scenebuilder.h)
 
 include_directories(src)
-include_directories(vendor)
+include_directories(vendor/glm/include)
+include_directories(vendor/stb/include)
 
 add_library(raytracer
         ${SOURCES}

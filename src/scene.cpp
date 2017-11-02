@@ -10,181 +10,218 @@
 
 namespace rays {
 
-    ColorDbl Scene::trace(const Ray &ray, RNG &rng, int depth, bool specularBounce) const {
+    ColorDbl Scene::trace(const Ray &primaryRay, RNG &rng) const {
 
         ColorDbl L{0.0, 0.0, 0.0};
+        ColorDbl throughput{1.0, 1.0, 1.0}; // throughput
+        bool specularBounce = false;
+        Ray ray(primaryRay.o, primaryRay.d);
 
-        if (depth == options::maxDepth) {
-//            std::cout << "Max depth reached. L = " << L << std::endl;
-            return L;
-        }
+        for (unsigned int bounces = 0; bounces < options::maxDepth; bounces++) {
+            IntersectionInfo isect;
+            bool intersected = intersect(ray, &isect);
 
-        // Check intersection
-        IntersectionInfo isect;
-        bool intersected = intersect(ray, &isect);
-
-        if (!intersected) {
-            std::cerr << "Ray escaped scene. " << ray << std::endl;
-            return L;
-        }
-
-        // Intersected object is an area light source.
-        // Add contribution from light and terminate.
-        // We only care about the first bounce and specular reflections
-        if (auto &&l = isect.obj->getAreaLight()) {
-//            if (depth == 0 || specularBounce) {
-            if (depth == 0) {
-                L += l->L0 * l->intensity;
-
+            if (!intersected || bounces >= options::maxDepth) {
+//                std::cerr << "Ray escaped scene. " << ray << std::endl;
+                break;
             }
-//            glm::vec3 wi, wo;
-//                L += l->L0 * l->intensity * isect.brdf->fr(wi, wo);
-//            L += l->L0 * l->intensity;
-//            }
-            return L;
-//            return l->L0;
-        }
+//            std::cout << throughput << std::endl;
 
-        glm::vec3 woWorld = isect.wo; // Should be normalized
-        glm::vec3 n = isect.n; // Should be normalized
-        const glm::vec3 hitPoint = isect.p;
+            glm::vec3 P = isect.p;
+            glm::vec3 N = isect.n;
+            glm::vec3 woWorld = -ray.d;
 
+            // Create local coordinate system
+            glm::vec3 ss, ts;
+            coordinateSystem(N, &ss, &ts);
 
-        // Create local coordinate system
-        glm::vec3 ss, ts;
-        coordinateSystem(n, &ss, &ts);
+            // Transform wo to local
+            glm::vec3 woLocal = glm::normalize(worldToLocal(ss, ts, N, woWorld));
 
-        // Transform wo to local
-        glm::vec3 wo = glm::normalize(worldToLocal(ss, ts, n, woWorld));
-
-        // From here on, the calculations are in the local coordinate system of the
-        // current hemisphere
-
-
-
-        constexpr float epsilon = 1e-4f;
-
-        // Check the intersection surface
-        // Different behaviour depending on surface type
-        if (isect.brdf->getType() == BSDF_DIFFUSE) {
-            // Monte-Carlo: Use pdf and rng to calculate the reflected ray
-
-            // Add direct light contribution
-            // Send shadow rays to all light sources
-            // For every area light
-
-            // PDF = 1/Area
-            // Draw u, v random numbers [0, 1[
-            // if u + v < 1, create end point q_i = (1 − u − v)v0 + u * v1 + v * v2
-            // v0, v1, v2 are the triangle vertices
-            // Create 10 < M < 20 endpoints
-            // Shoot shadow rays from x -> q_i - q_M
-            // Calculate V(x, q_i) and G(x, q_i)
-            // Sum (fr * V * G)
-
-            specularBounce = false;
-
-            // Reflect in random direction
-            const float phi = PIx2 * invP * rng.getUniform1D();
-            // Russian roulette
-            if (phi > PIx2) {
-                return L;
-            }
-
-            const auto nLights = static_cast<int>(lights.size());
-            int lightSourceIdx = std::min(static_cast<int>(rng.getUniform1D() * nLights), nLights - 1);
-
-            AreaLight *l = lights[lightSourceIdx].get();
-            Shape *tri = l->T.get();
-            ColorDbl Ld{0, 0, 0};
-            for (unsigned int i = 0; i < options::nrLightSamples; i++) {
-                const glm::vec2 r2 = rng.getUniform2D();
-                const glm::vec3 q = tri->getRandomPoint(r2); // random point on the triangle
-                const glm::vec3 wiWorld = glm::normalize(q - hitPoint);
-                IntersectionInfo shadowIsect;
-                const Ray shadowRay(hitPoint + n * epsilon, wiWorld);
-                if (intersect(shadowRay, &shadowIsect) && shadowIsect.shape == tri) {
-                    // No occlusion! Add contribution from this ray
-                    const glm::vec3 wi = glm::normalize(worldToLocal(ss, ts, n, wiWorld));
-                    glm::vec3 shadowN = shadowIsect.n;
-                    const ColorDbl f = isect.brdf->fr(wi, wo);
-
-                    // Calculate geometric term
-                    auto cosLightAngle = glm::dot(shadowN, -wiWorld);
-                    auto lightSolidAngle =
-                            l->area / static_cast<float>(options::nrLightSamples) *
-                            glm::clamp(cosLightAngle, 0.0f, 1.0f)
-                            / glm::distance2(q, hitPoint);
-                    auto costheta = glm::dot(wiWorld, n);
-                    Ld += f * l->L0 * l->intensity * costheta * lightSolidAngle;
+            // -----------------------------------------------------------------------
+            // Add contribution from emissive surface
+            if (bounces == 0 || specularBounce) {
+                // TODO Refactor to area light source Le()
+                if (auto &&l = isect.obj->getAreaLight()) {
+                    // bsdf light pdf
+                    // mis weight
+                    // *******************************************************************
+                    ColorDbl Le = l->L0 * l->intensity; // Lambertian light source
+                    // *******************************************************************
+                    L += throughput * Le; // * weight / bsdfPdf
                 }
             }
-//            L += static_cast<float>(nLights) / static_cast<float>(options::nrLightSamples) * l->area * Ld;
-            L += static_cast<float>(nLights) * Ld;
+
+            // -----------------------------------------------------------------------
+            constexpr float epsilon = 1e-5f;
+            if (isect.brdf->getType() == BSDF_DIFFUSE) {
+
+                // Next event estimation (light sampling with shadow rays)
+
+                // Sample light source with MIS
+                // TODO Refactor to SampleLight() function
+                // *******************************************************************
+                const auto nLights = static_cast<int>(lights.size());
+                int lightSourceIdx = std::min(static_cast<int>(rng.getUniform1D() * nLights), nLights - 1);
+
+                ColorDbl Ld{0, 0, 0};
+                ColorDbl Li{0, 0, 0};
+                AreaLight *light = lights[lightSourceIdx].get();
+                Shape *tri = light->T.get();
+                for (unsigned int j = 0; j < options::nrLightSamples; j++) {
+                    const glm::vec2 r2 = rng.getUniform2D();
+                    const glm::vec3 q = tri->getRandomPoint(r2); // random point on the triangle
+                    const glm::vec3 wiWorld = glm::normalize(q - P);
+                    IntersectionInfo shadowIsect;
+                    const Ray shadowRay(P + N * epsilon, wiWorld);
+                    if (intersect(shadowRay, &shadowIsect) && shadowIsect.shape == tri) {
+                        // No occlusion! Add contribution from this ray
+                        const glm::vec3 wiLocal = glm::normalize(worldToLocal(ss, ts, N, wiWorld));
+                        glm::vec3 shadowN = shadowIsect.n;
+                        const ColorDbl f = isect.brdf->sample(wiLocal, woLocal) * absDot(wiWorld, isect.n);
+                        float lightBsdfPdf = isect.brdf->pdf(wiLocal, woLocal);
+                        // Pdf scaled by geometry term
+                        // TODO Refactor geometry term calculation to function G()
+                        float lightPdf = light->pdf() * glm::distance2(q, P) / absDot(shadowN, -wiWorld);
+                        if (std::isinf(lightPdf)) lightPdf = 0;
+
+                        if (lightPdf > 0) {
+                            Li = glm::dot(shadowIsect.n, wiWorld) < 0 ? light->L0 * light->intensity : ColorDbl{0, 0,
+                                                                                                                0};
+                            float weight = balanceHeuristic(lightPdf, lightBsdfPdf);
+
+                            Ld += f * Li * weight / lightPdf;
+                        }
+                    }
+                }
+
+                Ld /= static_cast<float>(options::nrLightSamples);
 
 
-            float theta = glm::sqrt(rng.getUniform1D());
-//            float theta = glm::acos(glm::sqrt(rng.getUniform1D()));
+                // *******************************************************************
+                // Sample BSDF with MIS
+                float phi = PIx2 * invP * rng.getUniform1D();
+                float theta = glm::sqrt(rng.getUniform1D());
+                glm::vec3 wiLocal = glm::normalize(sphericalToCartesian(theta, phi));
+                glm::vec3 wiWorld = glm::normalize(localToWorld(ss, ts, N, wiLocal));
 
-//            const glm::vec3 wi = glm::normalize(glm::vec3{cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)});
-            const glm::vec3 wi = glm::normalize(sphericalToCartesian(theta, phi));
-            const glm::vec3 wiWorld = glm::normalize(localToWorld(ss, ts, n, wi));
+                ColorDbl f = isect.brdf->sample(wiLocal, woLocal) * absDot(wiWorld, isect.n);
+                float bsdfPdf = isect.brdf->pdf(wiLocal, woLocal);
 
-            const Ray newRay(hitPoint + n * epsilon, wiWorld);
-            return L + (PI * trace(newRay, rng, depth + 1, specularBounce) * isect.brdf->fr(wi, wo)) * invP;
-//            return isect.brdf->fr(wi, wo) * (L + trace(newRay, rng, depth + 1, specularBounce)) * invP;
+                if (bsdfPdf > 0) {
+                    float tHit;
+                    IntersectionInfo isectLight;
+                    // Early out intersection test
+                    Ray shadowRay(P + N * epsilon, wiWorld);
+                    if (tri->intersect(shadowRay, &isectLight, &tHit)) {
+                        // Proper intersection test
+                        if (this->intersect(shadowRay, &isectLight)) {
+                            //Light pdf scaled by geometry term
+                            // TODO Refactor geometry term calculation to function G()
+                            float lightPdf = light->pdf() * glm::distance2(P, isectLight.p) /
+                                             absDot(isectLight.n, -wiWorld);
+                            if (std::isinf(lightPdf)) lightPdf = 0;
+                            if (lightPdf > 0) {
+                                auto &&l = isectLight.obj->getAreaLight();
+                                if (l != nullptr) {
+                                    Li = glm::dot(isectLight.n, wiWorld) < 0 ? l->L0 * l->intensity : ColorDbl{0, 0, 0};
+                                    float weight = balanceHeuristic(bsdfPdf, lightPdf);
+                                    Ld += f * Li * weight / bsdfPdf;
+                                }
+                            }
+                        }
+                    }
+                }
 
-        } else if (isect.brdf->getType() == BSDF_SPECULAR) {
 
-            specularBounce = true;
+                // Add direct light contribution to path radiance
+                L += throughput * static_cast<float>(nLights) * Ld;
 
-            const glm::vec3 R = normalize(reflect(ray.d, n));
-            const glm::vec3 bias = epsilon * n;
-            const Ray reflectionRay(hitPoint + bias, R);
+                // -----------------------------------------------------------------------
+                // Generate a new sample direction from the BSDF
+                // TODO Refactor to BSDF::sample()
+                // NOTE Only supports diffuse right now
 
-            return trace(reflectionRay, rng, depth + 1, specularBounce);
+                // *******************************************************************
+                // Generate cosine weighted hemispherical coordinates
+                phi = PIx2 * invP * rng.getUniform1D();
+                // Russian roulette
+                if (phi > PIx2) {
+                    break;
+                }
+                theta = glm::sqrt(rng.getUniform1D());
 
-        } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
-            // Send reflection and refraction rays
-            // Don't really need a brdf here, just need to send the rays and
-            // calculate the importance contribution
+                // Construct the direction vectors
+                wiLocal = glm::normalize(sphericalToCartesian(theta, phi));
+                wiWorld = glm::normalize(localToWorld(ss, ts, N, wiLocal));
+                // *******************************************************************
 
-            specularBounce = true;
-            const glm::vec3 I = ray.d;
-            const float index = isect.brdf->index;
+                // TODO Change fr() to sample() and return wi vector, pdf and f()
+                f = isect.brdf->sample(wiLocal, woLocal);
+                bsdfPdf = isect.brdf->pdf(wiLocal, woLocal);
+                if (bsdfPdf == 0) break;
+                throughput *= f * absDot(wiWorld, isect.n) / bsdfPdf * invP;
+                specularBounce = isect.brdf->getType() == BSDF_SPECULAR;
 
-            const float cosThetaI = glm::dot(I, n);
-            glm::vec3 nI = n;
-            float eta = index;
-            const bool entering = cosThetaI < 0;
-            if (entering) {
-                eta = 1.0f / index;
-            } else {
-                nI = -n;
+                ray = Ray(P + N * epsilon, wiWorld);
+            } else if (isect.brdf->getType() == BSDF_TRANSPARENT) {
+
+                // Send reflection and refraction rays
+                // Don't really need a brdf here, just need to send the rays and
+                // calculate the importance contribution
+
+                specularBounce = true;
+                const glm::vec3 I = ray.d;
+                const float index = isect.brdf->index;
+
+                const float cosThetaI = glm::dot(I, N);
+                glm::vec3 nI = N;
+                float eta = index;
+                const bool entering = cosThetaI < 0;
+                if (entering) {
+                    eta = 1.0f / index;
+                } else {
+                    nI = -N;
+                }
+
+                const glm::vec3 R = glm::normalize(glm::reflect(I, nI));
+                glm::vec3 T;
+
+                const glm::vec3 bias = epsilon * N;
+                const glm::vec3 reflectionRayOrig = entering ? P + bias : P - bias;
+                const Ray reflectionRay(reflectionRayOrig, R);
+
+                if (!refract(&T, I, nI, eta)) { // returns false for total internal reflection
+                    throughput *= isect.brdf->R;
+                    ray = reflectionRay;
+                    continue;
+                }
+
+                const float Rs = entering ? fresnel(glm::dot(-I, nI), eta)
+                                          : fresnel(glm::dot(T, N), eta);
+
+                // Use fresnel coeff to decide if the ray reflects or refracts
+                // Keeps the width of the path at 1
+                const float u = rng.getUniform1D();
+                const glm::vec3 refractionRayOrig = entering ? P - bias : P + bias;
+                const Ray refractionRay(refractionRayOrig, T);
+                throughput *= isect.brdf->R;
+                if (Rs > u) {
+                    ray = reflectionRay;
+                } else {
+                    ray = refractionRay;
+                }
+
+            } else if (isect.brdf->getType() == BSDF_SPECULAR) {
+
+                specularBounce = true;
+                const glm::vec3 R = normalize(reflect(ray.d, N));
+                const glm::vec3 bias = epsilon * N;
+                const Ray reflectionRay(P + bias, R);
+                throughput *= isect.brdf->R;
+
+                ray = reflectionRay;
             }
-
-            const glm::vec3 R = glm::normalize(glm::reflect(I, nI));
-            glm::vec3 T;
-
-            const glm::vec3 bias = epsilon * n;
-            const glm::vec3 reflectionRayOrig = entering ? hitPoint + bias : hitPoint - bias;
-            const Ray reflectionRay(reflectionRayOrig, R);
-
-            if (!refract(&T, I, nI, eta)) { // returns false for total internal reflection
-                return trace(reflectionRay, rng, depth + 1, specularBounce);
-            }
-
-            const float Rs = entering ? fresnel(glm::dot(-I, nI), eta)
-                                      : fresnel(glm::dot(T, n), eta);
-
-            // ---------------------
-            // Reflection
-
-            const glm::vec3 refractionRayOrig = entering ? hitPoint - bias : hitPoint + bias;
-            const Ray refractionRay(refractionRayOrig, T);
-
-            return trace(reflectionRay, rng, depth + 1, specularBounce) * Rs +
-                   trace(refractionRay, rng, depth + 1, specularBounce) * (1.0f - Rs);
 
 
         }
@@ -196,14 +233,10 @@ namespace rays {
 
     bool Scene::intersect(const Ray &ray, IntersectionInfo *isect) const {
         // Check for intersection with every object in the scene
-        bool hit = false;
         for (auto &&o : objects) {
-            if (o.intersect(ray, isect)) {
-                hit = true;
-            }
+            o.intersect(ray, isect);
         }
-
-        return hit;
+        return ray.tMax < std::numeric_limits<float>::max();
     }
 
     bool Scene::intersectShadow(const Ray &ray, IntersectionInfo *isect) const {
@@ -216,4 +249,5 @@ namespace rays {
 
         return hit;
     }
+
 }

@@ -19,6 +19,10 @@ namespace rays {
 
         ~AreaLight() override = default;
 
+        float pdf() const {
+            return 1.0f / area;
+        }
+
         const std::shared_ptr<Shape> T;
         const float area;
 

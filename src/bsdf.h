@@ -57,6 +57,11 @@ namespace rays {
         return (sinTheta == 0) ? 0 : clamp(w.y / sinTheta, -1.f, 1.f);
     }
 
+
+    inline float balanceHeuristic(float numerator, float denominator) {
+        return numerator / (numerator + denominator);
+    }
+
     inline glm::vec3 reflect(const glm::vec3 &wo, const glm::vec3 &n) {
         return wo - 2.0f * glm::dot(n, wo) * n;
     }
@@ -107,7 +112,11 @@ namespace rays {
 
         virtual ~BSDF() = default;
 
-        virtual ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const = 0;
+        virtual ColorDbl sample(const glm::vec3 &wi, const glm::vec3 &wo) const = 0;
+
+        virtual float pdf(const glm::vec3 &wi, const glm::vec3 &wo) const {
+            return wi.z * wo.z > 0 ? absCosTheta(wi) * invPI : 0;
+        };
 
         virtual BSDF_Type getType() const = 0;
 
@@ -121,7 +130,7 @@ namespace rays {
 
         ~Lambertian() override = default;
 
-        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+        ColorDbl sample(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R * invPI;
         }
 
@@ -139,7 +148,7 @@ namespace rays {
 
         ~OrenNayar() override = default;
 
-        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+        ColorDbl sample(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             float sinThetaI = SinTheta(wi);
             float sinThetaO = SinTheta(wo);
             // Compute cosine term of Oren-Nayar model
@@ -176,8 +185,12 @@ namespace rays {
 
         ~Glass() override = default;
 
-        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+        ColorDbl sample(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R;
+        }
+
+        float pdf(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+            return 1;
         }
 
         BSDF_Type getType() const override {
@@ -191,8 +204,12 @@ namespace rays {
 
         ~Mirror() override = default;
 
-        ColorDbl fr(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+        ColorDbl sample(const glm::vec3 &wi, const glm::vec3 &wo) const override {
             return R;
+        }
+
+        float pdf(const glm::vec3 &wi, const glm::vec3 &wo) const override {
+            return 1;
         }
 
         BSDF_Type getType() const override {

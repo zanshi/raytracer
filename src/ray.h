@@ -13,15 +13,23 @@ namespace rays {
 
         explicit Ray(const glm::vec3 &o, const glm::vec3 &d) : o(o), d(d) {}
 
-        const glm::vec3 o; // origin
-        const glm::vec3 d;
+        glm::vec3 o; // origin
+        glm::vec3 d;
         mutable float tMax = std::numeric_limits<float>::max();
+
+        Ray &operator=(const Ray &r) {
+            o = r.o;
+            d = r.d;
+            tMax = r.tMax;
+            return *this;
+        }
+
     };
 
 
-    inline std::ostream& operator<<(std::ostream& os, const Ray& r) {
+    inline std::ostream &operator<<(std::ostream &os, const Ray &r) {
         os << "Position: (" << r.o.x << ", " << r.o.y << ", " << r.o.z << "), "
-                << "Direction: (" << r.d.x << ", " << r.d.y << ", " << r.d.z << ")";
+           << "Direction: (" << r.d.x << ", " << r.d.y << ", " << r.d.z << ")";
         return os;
     }
 }

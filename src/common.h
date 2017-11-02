@@ -17,7 +17,7 @@
 #include <cmath>
 #include <random>
 
-//#define GLM_FORCE_CXX14
+#define GLM_FORCE_CXX14
 #define GLM_FORCE_SSE42 // or GLM_FORCE_SSE42 if your processor supports it
 #define GLM_FORCE_ALIGNED
 #define GLM_FORCE_EXPLICIT_CTOR
@@ -63,7 +63,7 @@ namespace rays {
 
     // Utility functions
     template<typename T>
-    inline float clamp(const T &v, const T &lo, const T &hi) { return std::max(lo, std::min(hi, v)); }
+    inline float clamp(const T &v, const T &lo, const T &hi) { return std::max<T>(lo, std::min<T>(hi, v)); }
 
     template <typename T>
     inline int sgn(T val) {

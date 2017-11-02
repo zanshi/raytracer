@@ -11,6 +11,7 @@ namespace rays {
     struct ColorDbl {
 
         ColorDbl() : r(0), g(0), b(0) {}
+
         ColorDbl(double r, double g, double b) : r(r), g(g), b(b) {}
 
         double r;
@@ -22,6 +23,13 @@ namespace rays {
             r *= rhs;
             g *= rhs;
             b *= rhs;
+            return *this;
+        }
+
+        ColorDbl &operator*=(const ColorDbl &rhs) {
+            r *= rhs.r;
+            g *= rhs.g;
+            b *= rhs.b;
             return *this;
         }
 
@@ -93,7 +101,7 @@ namespace rays {
     }
 
     template<typename T>
-    inline ColorDbl clamp(const ColorDbl&c, T min, T max) {
+    inline ColorDbl clamp(const ColorDbl &c, T min, T max) {
         return ColorDbl(clamp(c.r, min, max), clamp(c.g, min, max), clamp(c.b, min, max));
     }
 

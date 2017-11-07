@@ -64,7 +64,7 @@ namespace rays {
         ColorDbl lightred{0.5, 0.0, 0.0};
         ColorDbl lightgreen{0.0, 0.5, 0.0};
         ColorDbl lightblue{0.0, 0.0, 0.5};
-        ColorDbl white{1.0, 1.0, 1.0};
+        ColorDbl white{0.9, 0.9, 0.9};
         ColorDbl yellow{0.7, 0.7, 0.0};
         ColorDbl magenta{0.7, 0.0, 0.7};
         ColorDbl cyan{0.0, 0.7, 0.7};
@@ -119,7 +119,7 @@ namespace rays {
         // Define vertices
         glm::vec3 v0{7.0f, 4.0f, -4.0f};
         glm::vec3 v1{6.0f, -4.8f, -4.0f};
-        glm::vec3 v2{3.6f, -1.3f, -1.7f};
+        glm::vec3 v2{3.6f, -1.3f, -4.0f};
         glm::vec3 v3{5.5f, -1.0f, 0.0f};
 
         // Define triangles
@@ -130,8 +130,10 @@ namespace rays {
 
         // Define surface
         const ColorDbl colour{0.75, 0.75, 0.25};
+//        const ColorDbl colour{0.9, 0.9, 0.9};
         const std::shared_ptr<BSDF> surface = std::make_shared<OrenNayar>(colour, 0.3f);
 //        const std::shared_ptr<BSDF> surface = std::make_shared<Lambertian>(colour);
+//        const std::shared_ptr<BSDF> surface = std::make_shared<Glass>(colour, 1.52f);
 
         // Create and add scene objects
         tetrahedron.emplace_back(t0, surface);
@@ -148,10 +150,10 @@ namespace rays {
 
         std::vector<SceneObject> lightTriangles;
 
-        glm::vec3 v0{4.0f, 3.0f, 4.5f};
-        glm::vec3 v1{5.0f, 3.0f, 4.5f};
-        glm::vec3 v2{5.0f, -3.0f, 4.5f};
-        glm::vec3 v3{4.0f, -3.0f, 4.5f};
+        glm::vec3 v0{4.5f, 0.5f, 4.5f};
+        glm::vec3 v1{5.0f, 0.5f, 4.5f};
+        glm::vec3 v2{5.0f, -0.5f, 4.5f};
+        glm::vec3 v3{4.5f, -0.5f, 4.5f};
 
         const std::shared_ptr<Shape> t0 = std::make_shared<Triangle>(Triangle({v0, v1, v2}));
         const std::shared_ptr<Shape> t1 = std::make_shared<Triangle>(Triangle({v2, v3, v0}));
@@ -186,7 +188,7 @@ namespace rays {
         const std::shared_ptr<BSDF> diffuse_material = std::make_shared<OrenNayar>(red, 0.3f);
         const std::shared_ptr<BSDF> mirror_material = std::make_shared<Mirror>(red, 0.3f);
         auto sphere_glass =
-                SceneObject(std::make_shared<Sphere>(Sphere({5.0f, 3.0f, 1.0f}, 1.8f)), glass_material);
+                SceneObject(std::make_shared<Sphere>(Sphere({5.0f, 3.0f, -2.0f}, 1.8f)), glass_material);
         auto sphere_diffuse =
                 SceneObject(std::make_shared<Sphere>(Sphere({4.5f, -2.7f, 2.0f}, 1.5f)), diffuse_material);
         auto sphere_mirror =

@@ -25,6 +25,9 @@ namespace rays {
         glm::vec3 d;
         mutable float tMax = std::numeric_limits<float>::max();
 
+		Ray(const Ray& r) = default;
+		Ray(Ray&& r) = default;
+
         Ray &operator=(const Ray &r) = default;
         Ray &operator=(Ray &&r) = default;
 

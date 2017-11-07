@@ -10,6 +10,7 @@
 #include "options.h"
 #include "colordbl.h"
 #include "scene.h"
+#include "ray.h"
 
 
 namespace rays {
@@ -17,7 +18,7 @@ namespace rays {
     using ColorChar = std::array<unsigned char, 3>;
 
     class Camera {
-        using CameraPlane = std::vector<std::vector<ColorDbl>>;
+		using CameraPlane = std::vector<ColorDbl>;
     public:
 
         explicit Camera(std::array<glm::vec3, 2> cameraPositions)
@@ -33,13 +34,13 @@ namespace rays {
 
         ColorChar toneMap(ColorDbl c, double iMax) const;
 
-        Ray createPrimaryRayPacket(int y, int z, RNG &rng) const;
+        Ray createPrimaryRayPacket(int y, int z, int sy, int sz, RNG &rng) const;
 
         double getMaxPixelColorVal() const;
 
         const glm::vec3 eyePos;
 
-        std::array<ColorDbl, options::width * options::width> plane;
+		CameraPlane plane;
 
     };
 

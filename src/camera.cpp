@@ -13,52 +13,66 @@
 
 namespace rays {
 
+    Ray Camera::createPrimaryRayPacket(int y, int z, int sy, int sz, RNG &rng) const {
+
+        constexpr float offset = 1.0f - 1.0f / options::width;
+        RayPacket rays;
+        // Determine position on camera plane
+        const float r1 = 2 * rng.getUniform1D();
+        const float r2 = 2 * rng.getUniform1D();
+        float offY = r1 < 1 ? glm::sqrt(r1) - 1 : 1 - glm::sqrt(2 - r1);
+        float offZ = r2 < 1 ? glm::sqrt(r2) - 1 : 1 - glm::sqrt(2 - r2);
+
+        offY = (sy + 0.5f + offY) / 2.0f + y;
+        offZ = (sz + 0.5f + offZ) / 2.0f + z;
+
+        //                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
+        const auto direction = glm::normalize(
+                glm::vec3{0, offY * options::dx - offset, offset - offZ * options::dx} - eyePos);
+
+        // Create eye -> camera plane ray
+        return Ray(eyePos, direction);
+    }
 
     void Camera::render(Scene scene) {
         // Loop over each pixel
         // Tile this later
-        constexpr float offset = 1.0f - 1.0f / options::width;
         constexpr unsigned width = options::width;
         constexpr unsigned height = width;
 
+        CameraPlane tempPlane;
+        tempPlane.resize(width * height);
+
+        constexpr double invNSamples = 1.0 / options::nrSamples;
+
         RNG rng{};
-#pragma omp parallel for collapse(2) default(none) shared(plane, scene) private(rng) schedule(dynamic, 16)
-        for (unsigned int y = 0; y < width; y++) {
-            for (unsigned int z = 0; z < height; z++) {
-                ColorDbl L{0, 0, 0};
+#pragma omp parallel for collapse(3) default(none) shared(tempPlane, scene) private(rng) schedule(dynamic, 16)
+        for (unsigned int k = 0; k < options::nrSamples; k++) {
+            for (unsigned int y = 0; y < width; y++) {
+                for (unsigned int z = 0; z < height; z++) {
+                    ColorDbl L{0, 0, 0};
 
-                plane[y * options::width + z] = L;
+//                    tempPlane[y * options::width + z] = L;
 
-                for (unsigned int sy = 0; sy < 2; sy++) {
-                    for (unsigned int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
-                        for (unsigned int k = 0; k < options::nrSamples; k++) {
+                    for (unsigned int sy = 0; sy < 2; sy++) {
+                        for (unsigned int sz = 0; sz < 2; sz++, L = {0, 0, 0}) {
+                            std::array<ColorDbl, options::nrSamples> lightAccum;
+                            L += scene.trace(createPrimaryRayPacket(y, z, sy, sz, rng), rng);
 
-                            // Determine position on camera plane
-                            const float r1 = 2 * rng.getUniform1D();
-                            const float r2 = 2 * rng.getUniform1D();
-                            float offY = r1 < 1 ? glm::sqrt(r1) - 1 : 1 - glm::sqrt(2 - r1);
-                            float offZ = r2 < 1 ? glm::sqrt(r2) - 1 : 1 - glm::sqrt(2 - r2);
-
-                            offY = (sy + 0.5f + offY) / 2.0f + y;
-                            offZ = (sz + 0.5f + offZ) / 2.0f + z;
-
-//                            direction = glm::normalize(glm::vec3{0, y * dx - offset, offset - z * dx} - eyes[eyeIdx]);
-                            const auto direction = glm::normalize(
-                                    glm::vec3{0, offY * options::dx - offset, offset - offZ * options::dx} - eyePos);
-
-                            // Create eye -> camera plane ray
-                            const Ray ray(eyePos, direction);
-
-                            L += scene.trace(ray, rng);
+                            tempPlane[y * options::width + z] += L * 0.25;
                         }
-                        L = L / options::nrSamples;
-
-                        plane[y * options::width + z] += L * 0.25;
                     }
-                }
 
+                }
             }
         }
+
+        std::transform(begin(tempPlane), end(tempPlane), begin(tempPlane), [invNSamples](auto c) {
+            return c * invNSamples;
+        });
+
+        plane = tempPlane;
+
     }
 
     void Camera::createImage(const std::string &filename) const {
@@ -136,4 +150,5 @@ namespace rays {
 
 
     }
+
 }
